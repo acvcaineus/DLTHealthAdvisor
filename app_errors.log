@@ -24,3 +24,39 @@ LINE 2:         SELECT "Security", "Scalability", "Energy Efficiency...
                                                   ^
 HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
 
+2024-10-08 13:29:39,184 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "Energy Efficiency", "Governance", "Interoperability", 
+               "Operational Complexity", "Implementation Cost", "Latency", framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2:         SELECT "Security", "Scalability", "Energy Efficiency...
+                                                  ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-08 13:30:28,811 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "Energy Efficiency", "Governance", "Interoperability", 
+               "Operational Complexity", "Implementation Cost", "Latency", framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2:         SELECT "Security", "Scalability", "Energy Efficiency...
+                                                  ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-08 13:31:52,454 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "energy_efficiency", "Governance", "Interoperability", 
+               "operational_complexity", "implementation_cost", "Latency", framework 
+        FROM dlt_training_data
+        ': column "operational_complexity" does not exist
+LINE 3:                "operational_complexity", "implementation_cos...
+                       ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Operational Complexity".
+
+2024-10-08 13:32:06,285 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "energy_efficiency", "Governance", "Interoperability", 
+               "operational_complexity", "implementation_cost", "Latency", framework 
+        FROM dlt_training_data
+        ': column "operational_complexity" does not exist
+LINE 3:                "operational_complexity", "implementation_cos...
+                       ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Operational Complexity".
+

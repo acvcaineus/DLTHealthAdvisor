@@ -49,11 +49,11 @@ class Database:
                     id SERIAL PRIMARY KEY,
                     "Security" FLOAT,
                     "Scalability" FLOAT,
-                    "Energy Efficiency" FLOAT,
+                    "energy_efficiency" FLOAT,
                     "Governance" FLOAT,
                     "Interoperability" FLOAT,
-                    "Operational Complexity" FLOAT,
-                    "Implementation Cost" FLOAT,
+                    "operational_complexity" FLOAT,
+                    "implementation_cost" FLOAT,
                     "Latency" FLOAT,
                     framework VARCHAR(50)
                 )
@@ -76,8 +76,8 @@ class Database:
 
     def get_training_data(self):
         query = '''
-        SELECT "Security", "Scalability", "Energy Efficiency", "Governance", "Interoperability", 
-               "Operational Complexity", "Implementation Cost", "Latency", framework 
+        SELECT "Security", "Scalability", "energy_efficiency", "Governance", "Interoperability", 
+               "operational_complexity", "implementation_cost", "Latency", framework 
         FROM dlt_training_data
         '''
         try:
@@ -95,7 +95,7 @@ class Database:
                 df = pd.read_csv('data/dlt_frameworks.csv')
                 for _, row in df.iterrows():
                     cur.execute('''
-                        INSERT INTO dlt_training_data ("Security", "Scalability", "Energy Efficiency", "Governance", "Interoperability", "Operational Complexity", "Implementation Cost", "Latency", framework)
+                        INSERT INTO dlt_training_data ("Security", "Scalability", "energy_efficiency", "Governance", "Interoperability", "operational_complexity", "implementation_cost", "Latency", framework)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ''', (row['Security'], row['Scalability'], row['Energy Efficiency'], row['Governance'], row['Interoperability'], row['Operational Complexity'], row['Implementation Cost'], row['Latency'], row['name']))
                 self.conn.commit()
