@@ -96,3 +96,39 @@ LINE 2:         SELECT "Security", "Scalability", "Energy Efficiency...
                                                   ^
 HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
 
+2024-10-08 13:35:41,086 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "Energy Efficiency" as energy_efficiency, "Governance", "Interoperability", 
+               "Operational Complexity" as operational_complexity, "Implementation Cost" as implementation_cost, "Latency", name as framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2:         SELECT "Security", "Scalability", "Energy Efficiency...
+                                                  ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-08 13:38:05,718 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "Energy Efficiency" as energy_efficiency, "Governance", "Interoperability", 
+               "Operational Complexity" as operational_complexity, "Implementation Cost" as implementation_cost, "Latency", name as framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2:         SELECT "Security", "Scalability", "Energy Efficiency...
+                                                  ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-08 13:41:18,302 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT security, scalability, energy_efficiency, governance, interoperability, 
+               operational_complexity, implementation_cost, latency, name as framework 
+        FROM dlt_training_data
+        ': column "security" does not exist
+LINE 2:         SELECT security, scalability, energy_efficiency, gov...
+                       ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-08 13:41:31,375 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT security, scalability, energy_efficiency, governance, interoperability, 
+               operational_complexity, implementation_cost, latency, name as framework 
+        FROM dlt_training_data
+        ': column "security" does not exist
+LINE 2:         SELECT security, scalability, energy_efficiency, gov...
+                       ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
