@@ -72,6 +72,21 @@ class Database:
                     "Latency" FLOAT
                 )
             ''')
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    username VARCHAR(50) UNIQUE NOT NULL,
+                    password_hash VARCHAR(255) NOT NULL
+                )
+            ''')
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS user_comparisons (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    comparison_data JSONB,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
         self.conn.commit()
 
     def get_training_data(self):
@@ -141,6 +156,78 @@ class Database:
             st.error(f"Error executing the query: {e}")
             logging.error(f"Error executing the query: {e}")
             raise
+
+    def create_user(self, username, password_hash):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id",
+                    (username, password_hash)
+                )
+                user_id = cur.fetchone()[0]
+                self.conn.commit()
+                return user_id
+        except Exception as e:
+            st.error(f"Error creating user: {e}")
+            logging.error(f"Error creating user: {e}")
+            self.conn.rollback()
+            return None
+
+    def get_user(self, user_id):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute("SELECT id, username, password_hash FROM users WHERE id = %s", (user_id,))
+                user = cur.fetchone()
+                if user:
+                    return {"id": user[0], "username": user[1], "password_hash": user[2]}
+                return None
+        except Exception as e:
+            st.error(f"Error getting user: {e}")
+            logging.error(f"Error getting user: {e}")
+            return None
+
+    def get_user_by_username(self, username):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute("SELECT id, username, password_hash FROM users WHERE username = %s", (username,))
+                user = cur.fetchone()
+                if user:
+                    return {"id": user[0], "username": user[1], "password_hash": user[2]}
+                return None
+        except Exception as e:
+            st.error(f"Error getting user by username: {e}")
+            logging.error(f"Error getting user by username: {e}")
+            return None
+
+    def save_user_comparison(self, user_id, comparison_data):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO user_comparisons (user_id, comparison_data) VALUES (%s, %s) RETURNING id",
+                    (user_id, psycopg2.extras.Json(comparison_data))
+                )
+                comparison_id = cur.fetchone()[0]
+                self.conn.commit()
+                return comparison_id
+        except Exception as e:
+            st.error(f"Error saving user comparison: {e}")
+            logging.error(f"Error saving user comparison: {e}")
+            self.conn.rollback()
+            return None
+
+    def get_user_comparisons(self, user_id):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    "SELECT id, comparison_data, created_at FROM user_comparisons WHERE user_id = %s ORDER BY created_at DESC",
+                    (user_id,)
+                )
+                comparisons = cur.fetchall()
+                return [{"id": c[0], "data": c[1], "created_at": c[2]} for c in comparisons]
+        except Exception as e:
+            st.error(f"Error getting user comparisons: {e}")
+            logging.error(f"Error getting user comparisons: {e}")
+            return []
 
     def __del__(self):
         if hasattr(self, 'conn') and self.conn:

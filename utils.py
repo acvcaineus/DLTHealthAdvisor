@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import io
+import json
 
 def get_user_responses():
     responses = {}
@@ -93,6 +94,26 @@ def export_to_csv(recommendations, comparison_data, metrics):
 
     # Write metrics
     pd.DataFrame([metrics]).to_excel(writer, sheet_name='Metrics', index=False)
+
+    writer.save()
+    return output.getvalue()
+
+def export_saved_comparison(saved_comparison):
+    output = io.StringIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+
+    # Write user responses
+    pd.DataFrame([saved_comparison['data']['user_responses']]).to_excel(writer, sheet_name='User Responses', index=False)
+
+    # Write recommendations
+    pd.DataFrame({'Recommendations': saved_comparison['data']['recommendations']}).to_excel(writer, sheet_name='Recommendations', index=False)
+
+    # Write comparison data
+    comparison_data = pd.DataFrame(saved_comparison['data']['comparison_data'])
+    comparison_data.to_excel(writer, sheet_name='Comparison', index=False)
+
+    # Write metrics
+    pd.DataFrame([saved_comparison['data']['metrics']]).to_excel(writer, sheet_name='Metrics', index=False)
 
     writer.save()
     return output.getvalue()
