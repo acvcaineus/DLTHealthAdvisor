@@ -1,70 +1,100 @@
 import streamlit as st
-import pandas as pd
-from decision_tree import DecisionTreeRecommender
 from database import Database
-from visualization import visualize_decision_tree, visualize_comparison
-from utils import get_user_responses, calculate_metrics, generate_explanation, export_to_csv
-from auth import create_user, authenticate_user, User
-import json
-from werkzeug.security import generate_password_hash
 
-# Initialize session state
-if 'user' not in st.session_state:
-    st.session_state.user = None
+# Funções para cada página
+def home_page():
+    st.title("Home")
+    st.write("Bem-vindo ao Framework de Seleção de DLT")
+    st.write("Aqui você pode obter recomendações de DLTs e comparar diferentes frameworks.")
+    st.subheader("Objetivo do Framework")
+    st.write("Explicação detalhada sobre o objetivo do framework, baseado na pilha de Shermin com quatro camadas.")
+    st.subheader("Base Teórica")
+    st.write("Aqui você pode inserir uma explicação sobre a pilha de Shermin e as camadas: aplicação, consenso, infraestrutura e internet.")
 
-# Initialize database connection and test it
-db = Database()
-if not db.test_connection():
-    st.error("Failed to connect to the database. Please check your database configuration.")
-    st.stop()
+def admin_panel_page(db):
+    st.title("Admin de Painel")
+    st.write("Gerencie os dados das tabelas do banco de dados.")
 
-# Initialize the decision tree recommender
-recommender = DecisionTreeRecommender()
+    st.subheader("Gerenciamento de Algoritmos de Consenso")
+    # Adicionar formulário para inclusão/alteração/exclusão de dados de algoritmos de consenso
 
-st.set_page_config(page_title="DLT Framework Recommender for Healthcare", layout="wide")
+    st.subheader("Gerenciamento de Frameworks")
+    # Adicionar formulário para inclusão/alteração/exclusão de dados de frameworks
 
-st.title("DLT Framework Recommender for Healthcare")
+    st.subheader("Gerenciamento de Casos de Uso")
+    # Adicionar formulário para inclusão/alteração/exclusão de casos de uso
 
-# User authentication
-if st.session_state.user is None:
-    st.subheader("Login")
-    login_username = st.text_input("Username")
-    login_password = st.text_input("Password", type="password")
-    col1, col2 = st.columns(2)
-    if col1.button("Login"):
-        user = authenticate_user(login_username, login_password)
-        if user:
-            st.session_state.user = user
-            st.success(f"Welcome, {user.username}!")
-            st.experimental_rerun()
-        else:
-            st.error("Invalid username or password")
-    if col2.button("Register"):
-        if login_username and login_password:
-            password_hash = generate_password_hash(login_password)
-            user_id = create_user(login_username, password_hash)
-            if user_id:
-                st.success("User registered successfully. Please log in.")
-            else:
-                st.error("Failed to register user. Username may already exist.")
-        else:
-            st.warning("Please enter both username and password to register.")
+def dlt_recommendation_page(db):
+    st.title("Recomendação de DLT")
+    st.write("Responda às perguntas abaixo para obter a recomendação de DLT.")
 
-    # Add new user 'suenia' with password '1234'
-    if not db.get_user_by_username('suenia'):
-        suenia_password_hash = generate_password_hash('1234')
-        suenia_user_id = create_user('suenia', suenia_password_hash)
-        if suenia_user_id:
-            st.success("User 'suenia' added successfully.")
-        else:
-            st.error("Failed to add user 'suenia'.")
+    st.subheader("Camada de Aplicação")
+    # Perguntas da camada de aplicação
 
-else:
-    st.write(f"Welcome, {st.session_state.user.username}!")
-    if st.button("Logout"):
-        st.session_state.user = None
-        st.experimental_rerun()
+    st.subheader("Camada de Consenso")
+    # Perguntas da camada de consenso
 
-    # Rest of the code remains unchanged
-    # ...
+    st.subheader("Camada de Infraestrutura")
+    # Perguntas da camada de infraestrutura
 
+    st.subheader("Camada de Internet")
+    # Perguntas da camada de internet
+
+    # Exibir recomendação com base nas respostas
+    if st.button("Obter Recomendação"):
+        st.write("Apresentar a recomendação de DLT com base nas respostas.")
+
+def decision_tree_metrics_page():
+    st.title("Métricas da Decision Tree")
+    st.write("Fórmulas e resultados da árvore de decisão.")
+
+    st.subheader("Fórmulas Utilizadas")
+    # Explicar fórmulas e cálculos
+
+    st.subheader("Resultados Otimizados")
+    # Mostrar os resultados da árvore de decisão com base nas respostas
+
+def validation_page():
+    st.title("Validação dos Resultados")
+    st.write("Justificativas técnicas para as pontuações e ponderações.")
+
+    st.subheader("Justificativas Técnicas")
+    # Explicações detalhadas
+
+    st.subheader("Comparação com outros Frameworks")
+    # Mostrar a comparação de resultados com outros frameworks
+
+def comparison_page():
+    st.title("Comparação entre Frameworks")
+    st.write("Compare o framework proposto com outros frameworks no banco de dados.")
+
+    # Exibir comparação entre os frameworks
+    st.subheader("Métricas de Comparação")
+    # Mostrar métricas de comparação
+
+# Função principal
+def main():
+    # Instanciar o banco de dados
+    db = Database()
+
+    # Menu lateral
+    menu = ["Home", "Admin de Painel", "Recomendação de DLT", "Métricas da Decision Tree", "Validação dos Resultados", "Comparação entre Frameworks"]
+    choice = st.sidebar.selectbox("Menu", menu)
+
+    # Mapeia as escolhas do menu para as funções correspondentes
+    if choice == "Home":
+        home_page()
+    elif choice == "Admin de Painel":
+        admin_panel_page(db)
+    elif choice == "Recomendação de DLT":
+        dlt_recommendation_page(db)
+    elif choice == "Métricas da Decision Tree":
+        decision_tree_metrics_page()
+    elif choice == "Validação dos Resultados":
+        validation_page()
+    elif choice == "Comparação entre Frameworks":
+        comparison_page()
+
+# Executa a função principal
+if __name__ == '__main__':
+    main()
