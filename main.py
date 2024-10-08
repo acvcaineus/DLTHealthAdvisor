@@ -2,7 +2,8 @@ import streamlit as st
 import psycopg2
 import hashlib
 from database import Database
-from utils import get_user_responses
+from sklearn import tree
+import numpy as np
 
 # Função para hash de senhas
 def hash_password(password):
@@ -14,10 +15,11 @@ def authenticate_user(db, username, password):
     try:
         with db.conn.cursor() as cur:
             cur.execute("SELECT id FROM users WHERE username = %s AND password_hash = %s", (username, hashed_password))
-            return cur.fetchone() is not None  # Retorna True se encontrar o usuário
+            user = cur.fetchone()
+            return user is not None, user  # Retorna True se encontrar o usuário e o próprio usuário
     except psycopg2.Error as e:
         st.error(f"Erro ao verificar o login: {e}")
-        return False
+        return False, None
 
 # Função para registrar novo usuário
 def register_user(db, username, password):
@@ -31,11 +33,13 @@ def login_page(db):
     login_password = st.text_input("Senha", type="password")
 
     if st.button("Entrar"):
-        if authenticate_user(db, login_username, login_password):
+        authenticated, user = authenticate_user(db, login_username, login_password)
+        if authenticated:
             st.session_state['logged_in'] = True
             st.session_state['username'] = login_username
-            st.success("Login bem-sucedido!")
-            st.experimental_rerun()  # This will reload the app and show the questionnaire page
+            st.session_state['user_id'] = user[0]  # Armazena o id do usuário
+            st.experimental_set_query_params(logged_in="True")  # Define query param para recarregar a página
+            st.rerun()  # This will reload the app and show the questionnaire page
         else:
             st.error("Nome de usuário ou senha incorretos.")
 
@@ -53,131 +57,91 @@ def login_page(db):
         else:
             st.warning("Por favor, preencha todos os campos.")
 
-# Função para a página inicial
-def home_page():
-    st.title("Home")
-    st.write(f"Bem-vindo, {st.session_state['username']}!")
+# Função para exibir perguntas e recomendar DLT para saúde com base em regras
+def dlt_recomendation_rules(respostas_usuario):
+    # Exemplo de regras simples para recomendação de DLT
+    if respostas_usuario[0] == 1 and respostas_usuario[1] == 1:
+        return "Hyperledger"
+    elif respostas_usuario[2] == 1 and respostas_usuario[3] == 1:
+        return "IOTA"
+    elif respostas_usuario[0] == 0 and respostas_usuario[3] == 1:
+        return "Ethereum"
+    else:
+        return "Corda"
 
-# Função para exibir e gerenciar os Algoritmos de Consenso
-def consensus_algorithms_page(db):
-    st.title("Algoritmos de Consenso")
-    st.write("Aqui estão os algoritmos de consenso disponíveis.")
-    try:
-        cur = db.conn.cursor()
-        cur.execute("SELECT * FROM dlt_consensus_algorithms")
-        data = cur.fetchall()
-        if data:
-            for row in data:
-                st.write(row)
-        else:
-            st.write("Nenhum algoritmo de consenso disponível.")
-    except Exception as e:
-        st.error(f"Erro ao carregar algoritmos de consenso: {e}")
+# Função para treinar o modelo de árvore de decisão
+def treinar_modelo(db):
+    # Exemplo de treinamento simples com frameworks e perguntas
+    X = np.array([[1, 1, 1, 0], [0, 1, 0, 1], [1, 0, 1, 1], [0, 0, 0, 0]])
+    y = np.array(['Hyperledger', 'Ethereum', 'IOTA', 'Corda'])
 
-# Função para exibir e gerenciar os Casos de Uso de Frameworks
-def framework_use_cases_page(db):
-    st.title("Casos de Uso de Frameworks")
-    st.write("Aqui estão os casos de uso dos frameworks.")
-    try:
-        cur = db.conn.cursor()
-        cur.execute("SELECT * FROM dlt_framework_use_cases")
-        data = cur.fetchall()
-        if data:
-            for row in data:
-                st.write(row)
-        else:
-            st.write("Nenhum caso de uso de frameworks disponível.")
-    except Exception as e:
-        st.error(f"Erro ao carregar casos de uso de frameworks: {e}")
+    clf = tree.DecisionTreeClassifier()
+    clf = clf.fit(X, y)
+    return clf
 
-# Função para exibir e gerenciar os Frameworks DLT
-def frameworks_page(db):
-    st.title("Frameworks DLT")
-    st.write("Aqui estão os frameworks DLT disponíveis.")
-    try:
-        cur = db.conn.cursor()
-        cur.execute("SELECT * FROM dlt_frameworks")
-        data = cur.fetchall()
-        if data:
-            for row in data:
-                st.write(row)
-        else:
-            st.write("Nenhum framework DLT disponível.")
-    except Exception as e:
-        st.error(f"Erro ao carregar frameworks DLT: {e}")
+# Função híbrida que utiliza regras e Machine Learning
+def dlt_hybrid_recommendation(db, respostas_usuario):
+    # Fase 1: Aplicação de Regras
+    dlt_inicial = dlt_recomendation_rules(respostas_usuario)
 
-# Função para exibir e gerenciar os Dados de Treinamento
-def training_data_page(db):
-    st.title("Dados de Treinamento")
-    st.write("Aqui estão os dados de treinamento disponíveis.")
-    try:
-        cur = db.conn.cursor()
-        cur.execute("SELECT * FROM dlt_training_data")
-        data = cur.fetchall()
-        if data:
-            for row in data:
-                st.write(row)
-        else:
-            st.write("Nenhum dado de treinamento disponível.")
-    except Exception as e:
-        st.error(f"Erro ao carregar dados de treinamento: {e}")
+    # Fase 2: Refinar com Machine Learning
+    clf = treinar_modelo(db)
+    dlt_final = clf.predict([respostas_usuario])[0]
 
-# Função para exibir e gerenciar os Casos de Uso DLT
-def use_cases_page(db):
-    st.title("Casos de Uso DLT")
-    st.write("Aqui estão os casos de uso das DLTs.")
-    try:
-        cur = db.conn.cursor()
-        cur.execute("SELECT * FROM dlt_use_cases")
-        data = cur.fetchall()
-        if data:
-            for row in data:
-                st.write(row)
-        else:
-            st.write("Nenhum caso de uso disponível.")
-    except Exception as e:
-        st.error(f"Erro ao carregar casos de uso de DLTs: {e}")
+    return dlt_inicial, dlt_final
 
-# Função para exibir e gerenciar as Comparações de Usuários
-def user_comparisons_page(db):
-    st.title("Comparações de Usuários")
-    st.write("Aqui estão as comparações feitas pelos usuários.")
-    try:
-        cur = db.conn.cursor()
-        cur.execute("SELECT * FROM user_comparisons")
-        data = cur.fetchall()
-        if data:
-            for row in data:
-                st.write(row)
-        else:
-            st.write("Nenhuma comparação disponível.")
-    except Exception as e:
-        st.error(f"Erro ao carregar comparações de usuários: {e}")
+# Função para calcular as métricas de Decision Tree e gravar no banco
+def calcular_metricas(db, framework, respostas_usuario):
+    # Exemplo de métricas simples usando Gini
+    gini = 1 - sum((respostas_usuario.count(val) / len(respostas_usuario)) ** 2 for val in set(respostas_usuario))
+    pontuacao = gini * len(respostas_usuario)  # Pontuação ponderada baseada na métrica Gini
 
-# Função para a administração de usuários
-def admin_users_page(db):
-    st.title("Administração de Usuários")
-    st.write("Aqui estão os usuários registrados.")
-    try:
-        cur = db.conn.cursor()
-        cur.execute("SELECT id, username FROM users")
-        data = cur.fetchall()
-        if data:
-            for row in data:
-                st.write(row)
-        else:
-            st.write("Nenhum usuário registrado.")
-    except Exception as e:
-        st.error(f"Erro ao carregar usuários: {e}")
+    # Gravar no banco de dados
+    with db.conn.cursor() as cur:
+        cur.execute("INSERT INTO pontuacaoframeworks (id_framework, id_usuario, pontuacao) VALUES (%s, %s, %s)", 
+                    (framework, st.session_state['user_id'], pontuacao))
+        db.conn.commit()
 
-# New function for questionnaire page
-def questionnaire_page():
-    st.title('Questionário')
-    user_responses = get_user_responses()
-    
-    if st.button("Salvar Respostas"):
-        # Here you would typically save the responses to the database
-        st.success("Respostas salvas com sucesso!")
+# Função para exibir o questionário de perguntas e recomendar DLT
+def dlt_questionnaire_page(db):
+    st.title("Recomendação de DLT para Saúde")
+
+    # Carregar perguntas do banco de dados
+    with db.conn.cursor() as cur:
+        cur.execute("SELECT id, descricao FROM perguntasframework")
+        perguntas = cur.fetchall()
+
+    respostas_usuario = []
+
+    for pergunta in perguntas:
+        id_pergunta, descricao = pergunta
+        resposta = st.radio(descricao, ["Sim", "Não"], key=f"pergunta_{id_pergunta}")
+        respostas_usuario.append(1 if resposta == "Sim" else 0)
+
+    # Seleção do tipo de abordagem
+    st.write("Selecione a abordagem para gerar a recomendação:")
+    abordagem = st.selectbox("Escolha a abordagem", ["Baseada em Regras", "Híbrida (Regras + Machine Learning)"])
+
+    if st.button("Obter Recomendação"):
+        if abordagem == "Baseada em Regras":
+            # Abordagem baseada em regras
+            dlt_recomendada = dlt_recomendation_rules(respostas_usuario)
+            st.write(f"**DLT Recomendada (Regras):** {dlt_recomendada}")
+        elif abordagem == "Híbrida (Regras + Machine Learning)":
+            # Abordagem híbrida
+            dlt_inicial, dlt_final = dlt_hybrid_recommendation(db, respostas_usuario)
+            st.write(f"**DLT Inicial Recomendada (Regras):** {dlt_inicial}")
+            st.write(f"**DLT Final Refinada (Machine Learning):** {dlt_final}")
+
+        # Gravar as respostas no banco de dados e calcular métricas
+        calcular_metricas(db, dlt_recomendada if abordagem == "Baseada em Regras" else dlt_final, respostas_usuario)
+
+        # Gravar as respostas do usuário
+        with db.conn.cursor() as cur:
+            for i, resposta in enumerate(respostas_usuario):
+                cur.execute("INSERT INTO respostasusuarios (id_pergunta, resposta, id_usuario) VALUES (%s, %s, %s)", 
+                            (perguntas[i][0], resposta, st.session_state['user_id']))
+            db.conn.commit()
 
 # Função principal para controle da aplicação
 def main():
@@ -195,34 +159,20 @@ def main():
         # Adicionar botão de logout
         if st.sidebar.button("Sair"):
             st.session_state['logged_in'] = False
-            st.experimental_rerun()
+            st.experimental_set_query_params(logged_in="False")  # Definir query param para forçar o recarregamento
+            st.rerun()  # Use st.rerun() instead of st.experimental_rerun()
 
         # Menu lateral
-        menu = ["Questionário", "Home", "Algoritmos de Consenso", "Casos de Uso de Frameworks", 
+        menu = ["Recomendação de DLT", "Algoritmos de Consenso", "Casos de Uso de Frameworks", 
                 "Frameworks DLT", "Dados de Treinamento", "Casos de Uso DLT", 
                 "Comparações de Usuários", "Administração de Usuários"]
 
         choice = st.sidebar.selectbox("Menu", menu)
 
         # Mapeia as escolhas do menu para as funções correspondentes
-        if choice == "Questionário":
-            questionnaire_page()
-        elif choice == "Home":
-            home_page()
-        elif choice == "Algoritmos de Consenso":
-            consensus_algorithms_page(db)
-        elif choice == "Casos de Uso de Frameworks":
-            framework_use_cases_page(db)
-        elif choice == "Frameworks DLT":
-            frameworks_page(db)
-        elif choice == "Dados de Treinamento":
-            training_data_page(db)
-        elif choice == "Casos de Uso DLT":
-            use_cases_page(db)
-        elif choice == "Comparações de Usuários":
-            user_comparisons_page(db)
-        elif choice == "Administração de Usuários":
-            admin_users_page(db)
+        if choice == "Recomendação de DLT":
+            dlt_questionnaire_page(db)  # Função para exibir o questionário e recomendação
+        # Outras páginas podem ser adicionadas conforme a necessidade
 
     # Se o usuário não estiver logado, exibir a página de login
     else:
