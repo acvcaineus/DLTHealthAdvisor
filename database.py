@@ -108,11 +108,11 @@ class Database:
                     );
                 """)
 
-                # Criação da tabela de pontuação dos frameworks
+                # Criação da tabela de pontuação dos frameworks (modificada)
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS pontuacaoframeworks (
                         id SERIAL PRIMARY KEY,
-                        id_framework INTEGER REFERENCES dlt_frameworks(id),
+                        id_framework VARCHAR(50),
                         id_usuario INTEGER REFERENCES users(id),
                         pontuacao NUMERIC,
                         framework_score NUMERIC
@@ -203,32 +203,32 @@ class Database:
             logging.error(f"Erro ao inserir perguntas no banco de dados: {e}")
             self.conn.rollback()
 
-def create_user(self, username, password_hash):
-    """Insere um novo usuário no banco de dados."""
-    try:
-        with self.conn.cursor() as cur:
-            # Verifica se o usuário já existe
-            cur.execute("SELECT id FROM users WHERE username = %s", (username,))
-            if cur.fetchone():
-                st.warning(f"O usuário {username} já existe.")
-                return None
+    def create_user(self, username, password_hash):
+        """Insere um novo usuário no banco de dados."""
+        try:
+            with self.conn.cursor() as cur:
+                # Verifica se o usuário já existe
+                cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+                if cur.fetchone():
+                    st.warning(f"O usuário {username} já existe.")
+                    return None
 
-            # Insere o novo usuário
-            cur.execute(
-                "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id",
-                (username, password_hash)
-            )
-            user_id = cur.fetchone()[0]
-            self.conn.commit()
-            logging.info(f"Usuário criado com sucesso: {username}")
-            return user_id
-    except psycopg2.Error as e:
-        st.error(f"Erro ao criar usuário no banco de dados: {e}")
-        logging.error(f"Erro ao criar usuário {username}: {e}")
-        self.conn.rollback()
-        return None
+                # Insere o novo usuário
+                cur.execute(
+                    "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id",
+                    (username, password_hash)
+                )
+                user_id = cur.fetchone()[0]
+                self.conn.commit()
+                logging.info(f"Usuário criado com sucesso: {username}")
+                return user_id
+        except psycopg2.Error as e:
+            st.error(f"Erro ao criar usuário no banco de dados: {e}")
+            logging.error(f"Erro ao criar usuário {username}: {e}")
+            self.conn.rollback()
+            return None
 
-def __del__(self):
-    """Fecha a conexão com o banco de dados quando o objeto Database for destruído."""
-    if hasattr(self, 'conn') and self.conn:
-        self.conn.close()
+    def __del__(self):
+        """Fecha a conexão com o banco de dados quando o objeto Database for destruído."""
+        if hasattr(self, 'conn') and self.conn:
+            self.conn.close()
