@@ -5,8 +5,11 @@ from database import Database
 from visualization import visualize_decision_tree, visualize_comparison
 from utils import get_user_responses, calculate_metrics, generate_explanation, export_to_csv
 
-# Initialize database connection
+# Initialize database connection and test it
 db = Database()
+if not db.test_connection():
+    st.error("Failed to connect to the database. Please check your database configuration.")
+    st.stop()
 
 # Initialize the decision tree recommender
 recommender = DecisionTreeRecommender()
