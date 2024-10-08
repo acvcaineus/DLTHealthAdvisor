@@ -6,7 +6,7 @@ class DecisionTreeRecommender:
     def __init__(self):
         self.decision_tree = DecisionTreeClassifier()
         self.label_encoder = LabelEncoder()
-        self.features = ['privacy', 'integration', 'data_volume', 'energy_efficiency']
+        self.features = ['security', 'scalability', 'energy_efficiency', 'governance', 'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
         self.target = 'framework'
         self.train_model()
 

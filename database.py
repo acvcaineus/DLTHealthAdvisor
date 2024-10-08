@@ -24,10 +24,14 @@ class Database:
             cur.execute('''
                 CREATE TABLE IF NOT EXISTS dlt_training_data (
                     id SERIAL PRIMARY KEY,
-                    privacy BOOLEAN,
-                    integration BOOLEAN,
-                    data_volume BOOLEAN,
+                    security BOOLEAN,
+                    scalability BOOLEAN,
                     energy_efficiency BOOLEAN,
+                    governance BOOLEAN,
+                    interoperability BOOLEAN,
+                    operational_complexity BOOLEAN,
+                    implementation_cost BOOLEAN,
+                    latency BOOLEAN,
                     framework VARCHAR(50)
                 )
             ''')
@@ -64,9 +68,9 @@ class Database:
                 df = pd.read_csv('data/dlt_frameworks.csv')
                 for _, row in df.iterrows():
                     cur.execute('''
-                        INSERT INTO dlt_training_data (privacy, integration, data_volume, energy_efficiency, framework)
-                        VALUES (%s, %s, %s, %s, %s)
-                    ''', (True, True, True, True, row['name']))
+                        INSERT INTO dlt_training_data (security, scalability, energy_efficiency, governance, interoperability, operational_complexity, implementation_cost, latency, framework)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (True, True, True, True, True, True, True, True, row['name']))
                 self.conn.commit()
         except Exception as e:
             print(f"Error populating training data: {e}")

@@ -5,23 +5,43 @@ import io
 def get_user_responses():
     responses = {}
     
-    responses['privacy'] = st.radio(
-        "Does the application require high privacy and centralized control?",
+    responses['security'] = st.radio(
+        "Is high security against attacks (including Byzantine attacks) crucial for your application?",
         ('Yes', 'No')
     ) == 'Yes'
     
-    responses['integration'] = st.radio(
-        "Does the network need to integrate with legacy healthcare systems (e.g., EHRs, hospital databases)?",
-        ('Yes', 'No')
-    ) == 'Yes'
-    
-    responses['data_volume'] = st.radio(
-        "Does the infrastructure need to handle large volumes of data or IoT devices?",
+    responses['scalability'] = st.radio(
+        "Does your application need to support a large volume of transactions and participants?",
         ('Yes', 'No')
     ) == 'Yes'
     
     responses['energy_efficiency'] = st.radio(
-        "Is energy efficiency a crucial factor for the network?",
+        "Is energy efficiency a critical factor for your network?",
+        ('Yes', 'No')
+    ) == 'Yes'
+    
+    responses['governance'] = st.radio(
+        "Do you require flexible governance that can be centralized or decentralized?",
+        ('Yes', 'No')
+    ) == 'Yes'
+    
+    responses['interoperability'] = st.radio(
+        "Is easy integration with legacy systems (e.g., EHRs) and other health systems important?",
+        ('Yes', 'No')
+    ) == 'Yes'
+    
+    responses['operational_complexity'] = st.radio(
+        "Is low operational complexity for implementation and maintenance in the healthcare environment important?",
+        ('Yes', 'No')
+    ) == 'Yes'
+    
+    responses['implementation_cost'] = st.radio(
+        "Is low implementation cost a priority for your project?",
+        ('Yes', 'No')
+    ) == 'Yes'
+    
+    responses['latency'] = st.radio(
+        "Is low latency crucial for your application, especially for real-time health monitoring?",
         ('Yes', 'No')
     ) == 'Yes'
     
@@ -48,16 +68,16 @@ def generate_explanation(framework, comparison_data):
     
     explanation = f"{framework} is recommended based on the following characteristics:\n\n"
     
-    criteria = ['Security', 'Scalability', 'Energy Efficiency', 'Governance', 'Interoperability', 'Operational Complexity', 'Implementation Cost', 'Latency']
+    criteria = ['Security', 'Scalability', 'Energy_Efficiency', 'Governance', 'Interoperability', 'Operational_Complexity', 'Implementation_Cost', 'Latency']
     
     for criterion in criteria:
         score = framework_data[criterion]
         if score >= 8:
-            explanation += f"- High {criterion.lower()} (Score: {score}/10)\n"
+            explanation += f"- High {criterion.lower().replace('_', ' ')} (Score: {score}/10)\n"
         elif score >= 6:
-            explanation += f"- Moderate {criterion.lower()} (Score: {score}/10)\n"
+            explanation += f"- Moderate {criterion.lower().replace('_', ' ')} (Score: {score}/10)\n"
         else:
-            explanation += f"- Low {criterion.lower()} (Score: {score}/10)\n"
+            explanation += f"- Low {criterion.lower().replace('_', ' ')} (Score: {score}/10)\n"
     
     return explanation
 

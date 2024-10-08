@@ -10,7 +10,7 @@ def visualize_decision_tree(decision_tree):
     
     # Plot the decision tree
     plt.figure(figsize=(20,10))
-    plot_tree(decision_tree, filled=True, feature_names=['privacy', 'integration', 'data_volume', 'energy_efficiency'])
+    plot_tree(decision_tree, filled=True, feature_names=['security', 'scalability', 'energy_efficiency', 'governance', 'interoperability', 'operational_complexity', 'implementation_cost', 'latency'])
     plt.savefig(buf, format='png')
     plt.close()
     
@@ -25,7 +25,7 @@ def visualize_decision_tree(decision_tree):
     return fig
 
 def visualize_comparison(comparison_data):
-    criteria = ['Security', 'Scalability', 'Energy Efficiency', 'Governance', 'Interoperability', 'Operational Complexity', 'Implementation Cost', 'Latency']
+    criteria = ['Security', 'Scalability', 'Energy_Efficiency', 'Governance', 'Interoperability', 'Operational_Complexity', 'Implementation_Cost', 'Latency']
     
     fig = go.Figure()
     
