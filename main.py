@@ -88,7 +88,6 @@ def calcular_metricas(db, framework, respostas_usuario):
     pontuacao = gini * len(respostas_usuario)
 
     with db.conn.cursor() as cur:
-        # Buscar o ID do Framework
         cur.execute("SELECT id FROM dlt_frameworks WHERE name = %s", (framework,))
         result = cur.fetchone()
         
@@ -98,7 +97,6 @@ def calcular_metricas(db, framework, respostas_usuario):
         
         framework_id = result[0]
         
-        # Inserção da Pontuação
         cur.execute("INSERT INTO pontuacaoframeworks (id_framework, id_usuario, pontuacao) VALUES (%s, %s, %s)", 
                     (framework_id, st.session_state['user_id'], pontuacao))
         db.conn.commit()
@@ -135,13 +133,11 @@ def dlt_questionnaire_page(db):
                 dlt_recomendada = recommender.get_recommendations(respostas_usuario)[0]
                 st.write(f"**DLT Recomendada (Híbrida):** {dlt_recomendada}")
 
-                # Feature Importance
                 st.subheader("Importância das Características")
                 feature_importances = recommender.get_feature_importances()
                 for feature, importance in feature_importances.items():
                     st.write(f"{feature}: {importance:.4f}")
 
-                # Sensitivity Analysis
                 st.subheader("Análise de Sensibilidade")
                 sensitivity_results = recommender.sensitivity_analysis(respostas_usuario)
                 for feature, sensitivity in sensitivity_results.items():
@@ -222,12 +218,15 @@ def add_dlt_use_cases_page(db):
         cur.execute("SELECT * FROM dlt_use_cases")
         use_cases = cur.fetchall()
     
-    for case in use_cases:
-        st.subheader(case[1])
-        st.write(f"Descrição: {case[2]}")
-        st.write(f"Benefícios: {case[3]}")
-        st.write(f"Desafios: {case[4]}")
-        st.write("---")
+    if not use_cases:
+        st.write("Não há casos de uso DLT disponíveis no momento.")
+    else:
+        for case in use_cases:
+            st.subheader(case[1] if len(case) > 1 else "Caso de Uso Sem Título")
+            st.write(f"Descrição: {case[2] if len(case) > 2 else 'Não disponível'}")
+            st.write(f"Benefícios: {case[3] if len(case) > 3 else 'Não disponível'}")
+            st.write(f"Desafios: {case[4] if len(case) > 4 else 'Não disponível'}")
+            st.write("---")
 
 def add_user_comparisons_page(db):
     st.title("Comparações de Usuários")

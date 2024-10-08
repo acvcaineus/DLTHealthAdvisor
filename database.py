@@ -18,7 +18,6 @@ class Database:
                 host=os.getenv('PGHOST'),
                 port=os.getenv('PGPORT')
             )
-            st.write("Conexão com o banco de dados estabelecida com sucesso.")
             self.create_tables()  # Cria as tabelas necessárias caso ainda não existam
             self.inserir_perguntas()  # Insere as perguntas no banco de dados caso não estejam inseridas
         except psycopg2.DatabaseError as e:
@@ -163,7 +162,6 @@ class Database:
                 """)
 
                 self.conn.commit()
-                st.write("Tabelas criadas com sucesso.")
         except psycopg2.Error as e:
             st.error(f"Erro ao criar tabelas: {e}")
             logging.error(f"Erro ao criar tabelas: {e}")
@@ -196,9 +194,6 @@ class Database:
                             VALUES (%s, %s, %s, %s, %s, %s);
                         """, pergunta)
                     self.conn.commit()
-                    st.write("Perguntas inseridas com sucesso.")
-                else:
-                    st.write("As perguntas já estão inseridas no banco de dados.")
         except psycopg2.Error as e:
             st.error(f"Erro ao inserir perguntas no banco de dados: {e}")
             logging.error(f"Erro ao inserir perguntas no banco de dados: {e}")
