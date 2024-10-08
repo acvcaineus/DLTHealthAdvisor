@@ -2,6 +2,7 @@ import streamlit as st
 import psycopg2
 import hashlib
 from database import Database
+from utils import get_user_responses
 
 # Função para hash de senhas
 def hash_password(password):
@@ -34,6 +35,7 @@ def login_page(db):
             st.session_state['logged_in'] = True
             st.session_state['username'] = login_username
             st.success("Login bem-sucedido!")
+            st.experimental_rerun()  # This will reload the app and show the questionnaire page
         else:
             st.error("Nome de usuário ou senha incorretos.")
 
@@ -168,6 +170,15 @@ def admin_users_page(db):
     except Exception as e:
         st.error(f"Erro ao carregar usuários: {e}")
 
+# New function for questionnaire page
+def questionnaire_page():
+    st.title('Questionário')
+    user_responses = get_user_responses()
+    
+    if st.button("Salvar Respostas"):
+        # Here you would typically save the responses to the database
+        st.success("Respostas salvas com sucesso!")
+
 # Função principal para controle da aplicação
 def main():
     # Instanciar a classe Database
@@ -187,14 +198,16 @@ def main():
             st.experimental_rerun()
 
         # Menu lateral
-        menu = ["Home", "Algoritmos de Consenso", "Casos de Uso de Frameworks", 
+        menu = ["Questionário", "Home", "Algoritmos de Consenso", "Casos de Uso de Frameworks", 
                 "Frameworks DLT", "Dados de Treinamento", "Casos de Uso DLT", 
                 "Comparações de Usuários", "Administração de Usuários"]
 
         choice = st.sidebar.selectbox("Menu", menu)
 
         # Mapeia as escolhas do menu para as funções correspondentes
-        if choice == "Home":
+        if choice == "Questionário":
+            questionnaire_page()
+        elif choice == "Home":
             home_page()
         elif choice == "Algoritmos de Consenso":
             consensus_algorithms_page(db)
@@ -218,5 +231,3 @@ def main():
 # Executa a função principal
 if __name__ == '__main__':
     main()
-
-
