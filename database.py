@@ -47,14 +47,14 @@ class Database:
             cur.execute('''
                 CREATE TABLE IF NOT EXISTS dlt_training_data (
                     id SERIAL PRIMARY KEY,
-                    "Security" FLOAT,
-                    "Scalability" FLOAT,
-                    "Energy Efficiency" FLOAT,
-                    "Governance" FLOAT,
-                    "Interoperability" FLOAT,
-                    "Operational Complexity" FLOAT,
-                    "Implementation Cost" FLOAT,
-                    "Latency" FLOAT,
+                    security FLOAT,
+                    scalability FLOAT,
+                    energy_efficiency FLOAT,
+                    governance FLOAT,
+                    interoperability FLOAT,
+                    operational_complexity FLOAT,
+                    implementation_cost FLOAT,
+                    latency FLOAT,
                     name VARCHAR(50)
                 )
             ''')
@@ -62,24 +62,24 @@ class Database:
                 CREATE TABLE IF NOT EXISTS dlt_frameworks (
                     id SERIAL PRIMARY KEY,
                     name VARCHAR(50),
-                    "Security" FLOAT,
-                    "Scalability" FLOAT,
-                    "Energy Efficiency" FLOAT,
-                    "Governance" FLOAT,
-                    "Interoperability" FLOAT,
-                    "Operational Complexity" FLOAT,
-                    "Implementation Cost" FLOAT,
-                    "Latency" FLOAT
+                    security FLOAT,
+                    scalability FLOAT,
+                    energy_efficiency FLOAT,
+                    governance FLOAT,
+                    interoperability FLOAT,
+                    operational_complexity FLOAT,
+                    implementation_cost FLOAT,
+                    latency FLOAT
                 )
             ''')
         self.conn.commit()
 
     def get_training_data(self):
         query = '''
-        SELECT "Security" as security, "Scalability" as scalability, "Energy Efficiency" as energy_efficiency, 
-               "Governance" as governance, "Interoperability" as interoperability, 
-               "Operational Complexity" as operational_complexity, "Implementation Cost" as implementation_cost, 
-               "Latency" as latency, name as framework 
+        SELECT security, scalability, energy_efficiency, 
+               governance, interoperability, 
+               operational_complexity, implementation_cost, 
+               latency, name as framework 
         FROM dlt_training_data
         '''
         try:
@@ -97,7 +97,7 @@ class Database:
                 df = pd.read_csv('data/dlt_frameworks.csv')
                 for _, row in df.iterrows():
                     cur.execute('''
-                        INSERT INTO dlt_training_data ("Security", "Scalability", "Energy Efficiency", "Governance", "Interoperability", "Operational Complexity", "Implementation Cost", "Latency", name)
+                        INSERT INTO dlt_training_data (security, scalability, energy_efficiency, governance, interoperability, operational_complexity, implementation_cost, latency, name)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ''', (row['Security'], row['Scalability'], row['Energy Efficiency'], row['Governance'], row['Interoperability'], row['Operational Complexity'], row['Implementation Cost'], row['Latency'], row['name']))
                 self.conn.commit()
@@ -117,7 +117,7 @@ class Database:
                 df = pd.read_csv('data/dlt_frameworks.csv')
                 for _, row in df.iterrows():
                     cur.execute('''
-                        INSERT INTO dlt_frameworks (name, "Security", "Scalability", "Energy Efficiency", "Governance", "Interoperability", "Operational Complexity", "Implementation Cost", "Latency")
+                        INSERT INTO dlt_frameworks (name, security, scalability, energy_efficiency, governance, interoperability, operational_complexity, implementation_cost, latency)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ''', (row['name'], row['Security'], row['Scalability'], row['Energy Efficiency'], row['Governance'], row['Interoperability'], row['Operational Complexity'], row['Implementation Cost'], row['Latency']))
                 self.conn.commit()

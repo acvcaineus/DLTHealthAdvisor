@@ -181,3 +181,36 @@ LINE 2: ...urity" as security, "Scalability" as scalability, "Energy Ef...
                                                              ^
 HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
 
+2024-10-08 13:45:00,579 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security" as security, "Scalability" as scalability, "Energy Efficiency" as energy_efficiency, 
+               "Governance" as governance, "Interoperability" as interoperability, 
+               "Operational Complexity" as operational_complexity, "Implementation Cost" as implementation_cost, 
+               "Latency" as latency, name as framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2: ...urity" as security, "Scalability" as scalability, "Energy Ef...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-08 13:54:17,507 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security" as security, "Scalability" as scalability, "Energy Efficiency" as energy_efficiency, 
+               "Governance" as governance, "Interoperability" as interoperability, 
+               "Operational Complexity" as operational_complexity, "Implementation Cost" as implementation_cost, 
+               "Latency" as latency, name as framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2: ...urity" as security, "Scalability" as scalability, "Energy Ef...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-08 13:54:30,407 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security" as security, "Scalability" as scalability, "Energy Efficiency" as energy_efficiency, 
+               "Governance" as governance, "Interoperability" as interoperability, 
+               "Operational Complexity" as operational_complexity, "Implementation Cost" as implementation_cost, 
+               "Latency" as latency, name as framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2: ...urity" as security, "Scalability" as scalability, "Energy Ef...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
