@@ -23,11 +23,13 @@ st.write("Welcome to the DLT Framework Recommender for Healthcare. This tool wil
 # Get user responses
 user_responses = get_user_responses()
 
-# Get recommendations
-recommendations = recommender.get_recommendations(user_responses)
+# Show loading indicator
+with st.spinner('Processing your responses...'):
+    # Get recommendations
+    recommendations = recommender.get_recommendations(user_responses)
 
-# Calculate metrics
-metrics = calculate_metrics(recommender, user_responses)
+    # Calculate metrics
+    metrics = calculate_metrics(recommender, user_responses)
 
 # Display recommendations and metrics
 st.subheader("Recommended DLT Frameworks")

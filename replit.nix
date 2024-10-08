@@ -1,5 +1,7 @@
 {pkgs}: {
   deps = [
+    pkgs.tree
+    pkgs.fltk14
     pkgs.glibcLocales
     pkgs.tk
     pkgs.tcl
