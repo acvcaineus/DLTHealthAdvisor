@@ -1,100 +1,222 @@
 import streamlit as st
+import psycopg2
+import hashlib
 from database import Database
 
-# Funções para cada página
+# Função para hash de senhas
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Função para autenticar o usuário
+def authenticate_user(db, username, password):
+    hashed_password = hash_password(password)
+    try:
+        with db.conn.cursor() as cur:
+            cur.execute("SELECT id FROM users WHERE username = %s AND password_hash = %s", (username, hashed_password))
+            return cur.fetchone() is not None  # Retorna True se encontrar o usuário
+    except psycopg2.Error as e:
+        st.error(f"Erro ao verificar o login: {e}")
+        return False
+
+# Função para registrar novo usuário
+def register_user(db, username, password):
+    hashed_password = hash_password(password)
+    return db.create_user(username, hashed_password)
+
+# Função para a tela de login
+def login_page(db):
+    st.title("Login")
+    login_username = st.text_input("Nome de Usuário")
+    login_password = st.text_input("Senha", type="password")
+
+    if st.button("Entrar"):
+        if authenticate_user(db, login_username, login_password):
+            st.session_state['logged_in'] = True
+            st.session_state['username'] = login_username
+            st.success("Login bem-sucedido!")
+        else:
+            st.error("Nome de usuário ou senha incorretos.")
+
+    st.write("---")
+    st.write("Ou registre um novo usuário abaixo:")
+
+    register_username = st.text_input("Novo Nome de Usuário")
+    register_password = st.text_input("Nova Senha", type="password")
+    if st.button("Registrar Novo Usuário"):
+        if register_username and register_password:
+            if register_user(db, register_username, register_password):
+                st.success(f"Usuário {register_username} registrado com sucesso! Por favor, faça login.")
+            else:
+                st.error(f"Falha ao registrar o usuário {register_username}.")
+        else:
+            st.warning("Por favor, preencha todos os campos.")
+
+# Função para a página inicial
 def home_page():
     st.title("Home")
-    st.write("Bem-vindo ao Framework de Seleção de DLT")
-    st.write("Aqui você pode obter recomendações de DLTs e comparar diferentes frameworks.")
-    st.subheader("Objetivo do Framework")
-    st.write("Explicação detalhada sobre o objetivo do framework, baseado na pilha de Shermin com quatro camadas.")
-    st.subheader("Base Teórica")
-    st.write("Aqui você pode inserir uma explicação sobre a pilha de Shermin e as camadas: aplicação, consenso, infraestrutura e internet.")
+    st.write(f"Bem-vindo, {st.session_state['username']}!")
 
-def admin_panel_page(db):
-    st.title("Admin de Painel")
-    st.write("Gerencie os dados das tabelas do banco de dados.")
+# Função para exibir e gerenciar os Algoritmos de Consenso
+def consensus_algorithms_page(db):
+    st.title("Algoritmos de Consenso")
+    st.write("Aqui estão os algoritmos de consenso disponíveis.")
+    try:
+        cur = db.conn.cursor()
+        cur.execute("SELECT * FROM dlt_consensus_algorithms")
+        data = cur.fetchall()
+        if data:
+            for row in data:
+                st.write(row)
+        else:
+            st.write("Nenhum algoritmo de consenso disponível.")
+    except Exception as e:
+        st.error(f"Erro ao carregar algoritmos de consenso: {e}")
 
-    st.subheader("Gerenciamento de Algoritmos de Consenso")
-    # Adicionar formulário para inclusão/alteração/exclusão de dados de algoritmos de consenso
+# Função para exibir e gerenciar os Casos de Uso de Frameworks
+def framework_use_cases_page(db):
+    st.title("Casos de Uso de Frameworks")
+    st.write("Aqui estão os casos de uso dos frameworks.")
+    try:
+        cur = db.conn.cursor()
+        cur.execute("SELECT * FROM dlt_framework_use_cases")
+        data = cur.fetchall()
+        if data:
+            for row in data:
+                st.write(row)
+        else:
+            st.write("Nenhum caso de uso de frameworks disponível.")
+    except Exception as e:
+        st.error(f"Erro ao carregar casos de uso de frameworks: {e}")
 
-    st.subheader("Gerenciamento de Frameworks")
-    # Adicionar formulário para inclusão/alteração/exclusão de dados de frameworks
+# Função para exibir e gerenciar os Frameworks DLT
+def frameworks_page(db):
+    st.title("Frameworks DLT")
+    st.write("Aqui estão os frameworks DLT disponíveis.")
+    try:
+        cur = db.conn.cursor()
+        cur.execute("SELECT * FROM dlt_frameworks")
+        data = cur.fetchall()
+        if data:
+            for row in data:
+                st.write(row)
+        else:
+            st.write("Nenhum framework DLT disponível.")
+    except Exception as e:
+        st.error(f"Erro ao carregar frameworks DLT: {e}")
 
-    st.subheader("Gerenciamento de Casos de Uso")
-    # Adicionar formulário para inclusão/alteração/exclusão de casos de uso
+# Função para exibir e gerenciar os Dados de Treinamento
+def training_data_page(db):
+    st.title("Dados de Treinamento")
+    st.write("Aqui estão os dados de treinamento disponíveis.")
+    try:
+        cur = db.conn.cursor()
+        cur.execute("SELECT * FROM dlt_training_data")
+        data = cur.fetchall()
+        if data:
+            for row in data:
+                st.write(row)
+        else:
+            st.write("Nenhum dado de treinamento disponível.")
+    except Exception as e:
+        st.error(f"Erro ao carregar dados de treinamento: {e}")
 
-def dlt_recommendation_page(db):
-    st.title("Recomendação de DLT")
-    st.write("Responda às perguntas abaixo para obter a recomendação de DLT.")
+# Função para exibir e gerenciar os Casos de Uso DLT
+def use_cases_page(db):
+    st.title("Casos de Uso DLT")
+    st.write("Aqui estão os casos de uso das DLTs.")
+    try:
+        cur = db.conn.cursor()
+        cur.execute("SELECT * FROM dlt_use_cases")
+        data = cur.fetchall()
+        if data:
+            for row in data:
+                st.write(row)
+        else:
+            st.write("Nenhum caso de uso disponível.")
+    except Exception as e:
+        st.error(f"Erro ao carregar casos de uso de DLTs: {e}")
 
-    st.subheader("Camada de Aplicação")
-    # Perguntas da camada de aplicação
+# Função para exibir e gerenciar as Comparações de Usuários
+def user_comparisons_page(db):
+    st.title("Comparações de Usuários")
+    st.write("Aqui estão as comparações feitas pelos usuários.")
+    try:
+        cur = db.conn.cursor()
+        cur.execute("SELECT * FROM user_comparisons")
+        data = cur.fetchall()
+        if data:
+            for row in data:
+                st.write(row)
+        else:
+            st.write("Nenhuma comparação disponível.")
+    except Exception as e:
+        st.error(f"Erro ao carregar comparações de usuários: {e}")
 
-    st.subheader("Camada de Consenso")
-    # Perguntas da camada de consenso
+# Função para a administração de usuários
+def admin_users_page(db):
+    st.title("Administração de Usuários")
+    st.write("Aqui estão os usuários registrados.")
+    try:
+        cur = db.conn.cursor()
+        cur.execute("SELECT id, username FROM users")
+        data = cur.fetchall()
+        if data:
+            for row in data:
+                st.write(row)
+        else:
+            st.write("Nenhum usuário registrado.")
+    except Exception as e:
+        st.error(f"Erro ao carregar usuários: {e}")
 
-    st.subheader("Camada de Infraestrutura")
-    # Perguntas da camada de infraestrutura
-
-    st.subheader("Camada de Internet")
-    # Perguntas da camada de internet
-
-    # Exibir recomendação com base nas respostas
-    if st.button("Obter Recomendação"):
-        st.write("Apresentar a recomendação de DLT com base nas respostas.")
-
-def decision_tree_metrics_page():
-    st.title("Métricas da Decision Tree")
-    st.write("Fórmulas e resultados da árvore de decisão.")
-
-    st.subheader("Fórmulas Utilizadas")
-    # Explicar fórmulas e cálculos
-
-    st.subheader("Resultados Otimizados")
-    # Mostrar os resultados da árvore de decisão com base nas respostas
-
-def validation_page():
-    st.title("Validação dos Resultados")
-    st.write("Justificativas técnicas para as pontuações e ponderações.")
-
-    st.subheader("Justificativas Técnicas")
-    # Explicações detalhadas
-
-    st.subheader("Comparação com outros Frameworks")
-    # Mostrar a comparação de resultados com outros frameworks
-
-def comparison_page():
-    st.title("Comparação entre Frameworks")
-    st.write("Compare o framework proposto com outros frameworks no banco de dados.")
-
-    # Exibir comparação entre os frameworks
-    st.subheader("Métricas de Comparação")
-    # Mostrar métricas de comparação
-
-# Função principal
+# Função principal para controle da aplicação
 def main():
-    # Instanciar o banco de dados
+    # Instanciar a classe Database
     db = Database()
 
-    # Menu lateral
-    menu = ["Home", "Admin de Painel", "Recomendação de DLT", "Métricas da Decision Tree", "Validação dos Resultados", "Comparação entre Frameworks"]
-    choice = st.sidebar.selectbox("Menu", menu)
+    # Controle de login usando session state
+    if 'logged_in' not in st.session_state:
+        st.session_state['logged_in'] = False
 
-    # Mapeia as escolhas do menu para as funções correspondentes
-    if choice == "Home":
-        home_page()
-    elif choice == "Admin de Painel":
-        admin_panel_page(db)
-    elif choice == "Recomendação de DLT":
-        dlt_recommendation_page(db)
-    elif choice == "Métricas da Decision Tree":
-        decision_tree_metrics_page()
-    elif choice == "Validação dos Resultados":
-        validation_page()
-    elif choice == "Comparação entre Frameworks":
-        comparison_page()
+    # Se o usuário estiver logado, exibir as páginas da aplicação
+    if st.session_state['logged_in']:
+        st.sidebar.success(f"Bem-vindo, {st.session_state['username']}")
+
+        # Adicionar botão de logout
+        if st.sidebar.button("Sair"):
+            st.session_state['logged_in'] = False
+            st.experimental_rerun()
+
+        # Menu lateral
+        menu = ["Home", "Algoritmos de Consenso", "Casos de Uso de Frameworks", 
+                "Frameworks DLT", "Dados de Treinamento", "Casos de Uso DLT", 
+                "Comparações de Usuários", "Administração de Usuários"]
+
+        choice = st.sidebar.selectbox("Menu", menu)
+
+        # Mapeia as escolhas do menu para as funções correspondentes
+        if choice == "Home":
+            home_page()
+        elif choice == "Algoritmos de Consenso":
+            consensus_algorithms_page(db)
+        elif choice == "Casos de Uso de Frameworks":
+            framework_use_cases_page(db)
+        elif choice == "Frameworks DLT":
+            frameworks_page(db)
+        elif choice == "Dados de Treinamento":
+            training_data_page(db)
+        elif choice == "Casos de Uso DLT":
+            use_cases_page(db)
+        elif choice == "Comparações de Usuários":
+            user_comparisons_page(db)
+        elif choice == "Administração de Usuários":
+            admin_users_page(db)
+
+    # Se o usuário não estiver logado, exibir a página de login
+    else:
+        login_page(db)
 
 # Executa a função principal
 if __name__ == '__main__':
     main()
+
+
