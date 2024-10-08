@@ -60,3 +60,39 @@ LINE 3:                "operational_complexity", "implementation_cos...
                        ^
 HINT:  Perhaps you meant to reference the column "dlt_training_data.Operational Complexity".
 
+2024-10-08 13:32:38,379 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "energy_efficiency", "Governance", "Interoperability", 
+               "operational_complexity", "implementation_cost", "Latency", framework 
+        FROM dlt_training_data
+        ': column "operational_complexity" does not exist
+LINE 3:                "operational_complexity", "implementation_cos...
+                       ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Operational Complexity".
+
+2024-10-08 13:32:53,972 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "energy_efficiency", "Governance", "Interoperability", 
+               "operational_complexity", "implementation_cost", "Latency", framework 
+        FROM dlt_training_data
+        ': column "operational_complexity" does not exist
+LINE 3:                "operational_complexity", "implementation_cos...
+                       ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Operational Complexity".
+
+2024-10-08 13:34:54,955 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "Energy Efficiency" as energy_efficiency, "Governance", "Interoperability", 
+               "Operational Complexity" as operational_complexity, "Implementation Cost" as implementation_cost, "Latency", name as framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2:         SELECT "Security", "Scalability", "Energy Efficiency...
+                                                  ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-08 13:35:06,744 - ERROR - Error executing the query: Execution failed on sql '
+        SELECT "Security", "Scalability", "Energy Efficiency" as energy_efficiency, "Governance", "Interoperability", 
+               "Operational Complexity" as operational_complexity, "Implementation Cost" as implementation_cost, "Latency", name as framework 
+        FROM dlt_training_data
+        ': column "Energy Efficiency" does not exist
+LINE 2:         SELECT "Security", "Scalability", "Energy Efficiency...
+                                                  ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
