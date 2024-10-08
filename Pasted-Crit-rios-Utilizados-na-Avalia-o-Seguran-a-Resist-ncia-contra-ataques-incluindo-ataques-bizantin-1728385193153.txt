@@ -1,0 +1,106 @@
+Critérios Utilizados na Avaliação
+Segurança – Resistência contra ataques, incluindo ataques bizantinos, 51% attacks, ciberataques e falhas de consenso.
+Escalabilidade – Capacidade de suportar grandes volumes de transações e número de participantes sem afetar o desempenho.
+Eficiência Energética – Consumo de energia relacionado à validação de transações e manutenção da rede.
+Governança – Flexibilidade da governança, com a possibilidade de ser centralizada ou descentralizada, e sua adequação à conformidade regulatória.
+Interoperabilidade – Facilidade de integração com sistemas legados (ex: EHRs) e outros sistemas de saúde.
+Complexidade Operacional – Facilidade de implementação e operação da DLT no ambiente de saúde.
+Custo de Implementação – Custo envolvido na implementação e operação da rede, considerando as necessidades tecnológicas.
+Latência – Tempo de resposta da rede para validar transações, que é crítico em aplicações de saúde com resposta em tempo real (ex: monitoramento de pacientes).
+Tipos de DLTs e Classificação por Pontuação
+1. DLT Permissionada Privada
+
+Uma DLT permissionada privada é controlada por um ou mais participantes conhecidos. Isso garante alta privacidade, segurança e controle sobre o acesso à rede, características essenciais para o setor de saúde, que lida com dados sensíveis.
+
+Segurança: 9.5/10 – Máxima segurança para dados críticos, como prontuários eletrônicos (EHRs) e registros médicos, com proteção contra ataques bizantinos e falhas de consenso.
+Escalabilidade: 7/10 – Moderada, adequada para redes privadas com um número conhecido de participantes. Não escalável para grandes volumes como as DLTs públicas.
+Eficiência Energética: 6.5/10 – Algoritmos como PBFT e RAFT consomem menos energia do que PoW, mas ainda podem ser exigentes em redes muito grandes.
+Governança: 9/10 – Governança centralizada forte, essencial para garantir conformidade regulatória e controle total sobre a rede.
+Interoperabilidade: 8.5/10 – Alta integração com sistemas legados de saúde, como EHRs, dispositivos médicos e bancos de dados hospitalares.
+Complexidade Operacional: 7/10 – Moderada, devido à necessidade de configurar e manter permissões centralizadas.
+Custo de Implementação: 7.5/10 – Custos moderados, devido à governança centralizada e ao controle sobre os nós.
+Latência: 6.5/10 – A latência é aceitável, mas pode ser um problema para grandes redes permissionadas.
+Exemplo de DLT: Hyperledger Fabric
+
+Grupo de Algoritmos de Consenso: Alta Segurança e Resiliência
+Algoritmos Específicos: PBFT (Practical Byzantine Fault Tolerance), RAFT
+2. DLT Permissionada Simples
+
+As DLTs permissionadas simples são semelhantes às privadas, mas têm um controle de governança menos rígido. São adequadas para redes menores e oferecem uma boa combinação de segurança e eficiência operacional.
+
+Segurança: 8/10 – Adequada para redes menores, onde os nós são conhecidos, com boa proteção contra ataques bizantinos.
+Escalabilidade: 6.5/10 – Moderada escalabilidade, suficiente para redes com menor número de participantes e volume de transações.
+Eficiência Energética: 7.5/10 – Uso de algoritmos como PoA e RAFT, que são energeticamente mais eficientes que PoW.
+Governança: 7/10 – Governança mais flexível que em redes permissionadas privadas, mas ainda centralizada.
+Interoperabilidade: 7.5/10 – Pode ser integrada com sistemas legados, mas com menos facilidade do que as redes privadas.
+Complexidade Operacional: 6.5/10 – Relativamente fácil de implementar, com menos requisitos de governança e controle de acesso.
+Custo de Implementação: 6.5/10 – Custo mais baixo em comparação com redes privadas, mas ainda significativo.
+Latência: 7/10 – Latência moderada, adequada para redes com um número limitado de transações.
+Exemplo de DLT: Quorum
+
+Grupo de Algoritmos de Consenso: Alta Eficiência Operacional
+Algoritmos Específicos: RAFT, PoA (Proof of Authority)
+3. DLT Híbrida
+
+As DLTs híbridas combinam elementos de redes permissionadas e permissionless, permitindo flexibilidade em privacidade e governança, mas com maior escalabilidade e eficiência energética.
+
+Segurança: 7.5/10 – Oferece segurança intermediária, adequada para cenários que requerem alguma privacidade, mas menos robusta que redes privadas.
+Escalabilidade: 8.5/10 – Muito escalável, ideal para grandes redes de dispositivos IoT ou ambientes de saúde com grande volume de dados.
+Eficiência Energética: 8.5/10 – Algoritmos como PoA e Tangle (IOTA) garantem alta eficiência energética.
+Governança: 7.5/10 – Governança intermediária, permitindo um equilíbrio entre controle centralizado e descentralização.
+Interoperabilidade: 8/10 – Boa integração com sistemas legados e dispositivos IoT, permitindo interoperabilidade entre diferentes plataformas.
+Complexidade Operacional: 7/10 – Moderada, devido à necessidade de equilibrar aspectos de privacidade, segurança e governança.
+Custo de Implementação: 7.5/10 – Custo intermediário, pois oferece maior flexibilidade, mas exige customizações específicas.
+Latência: 7.5/10 – A latência é geralmente baixa, tornando-a adequada para monitoramento em tempo real.
+Exemplo de DLT: IOTA (Tangle)
+
+Grupo de Algoritmos de Consenso: Eficiência Energética e Operacional
+Algoritmos Específicos: PoA (Proof of Authority), Tangle (IOTA)
+4. DLT com Consenso Delegado
+
+DLTs com consenso delegado utilizam um subconjunto de validadores para manter o consenso, o que permite alta escalabilidade e eficiência energética, mas pode comprometer a descentralização.
+
+Segurança: 8.5/10 – Segurança alta em redes que selecionam um subconjunto de validadores confiáveis, como em DPoS.
+Escalabilidade: 9/10 – Muito escalável, ideal para monitoramento de saúde pública e grandes redes de EHRs.
+Eficiência Energética: 8.5/10 – Algoritmos como DPoS consomem significativamente menos energia que PoW, sendo adequados para grandes redes.
+Governança: 8.5/10 – Flexível, com a capacidade de ajustar o número de validadores de acordo com as necessidades da rede.
+Interoperabilidade: 7.5/10 – Boa integração com EHRs, dispositivos IoT e outras plataformas de saúde, com customizações adequadas.
+Complexidade Operacional: 7.5/10 – Moderada, pois a operação com validadores delegados exige menos esforço.
+Custo de Implementação: 7/10 – Custos moderados, mas menores que em redes totalmente descentralizadas.
+Latência: 8/10 – Latência baixa, adequada para ambientes de tempo real.
+Exemplo de DLT: Polkadot (NPoS)
+
+Grupo de Algoritmos de Consenso: Alta Escalabilidade e Governança Flexível
+Algoritmos Específicos: DPoS (Delegated Proof of Stake), NPoS (Nominated Proof of Stake)
+5. DLT Pública
+
+DLTs públicas são abertas, oferecendo descentralização robusta, mas podem enfrentar desafios de escalabilidade e eficiência energética. Elas são úteis para transações públicas, como redes de pagamento.
+
+Segurança: 7.5/10 – Segurança sólida para redes públicas, mas menos robusta que redes permissionadas.
+Escalabilidade: 7.5/10 – Moderada, dependendo do algoritmo de consenso (ex: PoS oferece melhor escalabilidade que PoW).
+Eficiência Energética: 6/10 – Redes baseadas em PoW têm altos custos energéticos, mas PoS melhora esse aspecto.
+Governança: 7/10 – Descentralizada, com a comunidade participando das decisões de governança.
+Interoperabilidade: 6.5/10 – Dificuldade para integração com sistemas legados de saúde, especialmente em redes PoW.
+Complexidade Operacional: 6/10 – Alta complexidade devido à descentralização e necessidade de manutenção constante.
+Custo de Implementação: 6/10 – Custos elevados para manter a segurança em redes descentralizadas.
+Latência: 5.5/10 – Latência alta, o que pode ser problemático para aplicações de saúde com tempo crítico.
+Exemplo de DLT: Ethereum 2.0 (PoS)
+
+Grupo de Algoritmos de Consenso: Governança Descentralizada
+Algoritmos Específicos: PoS (Proof of Stake), Liquid PoS (Tezos)
+6. DLT Pública Permissionless
+
+DLTs permissionless são totalmente abertas, oferecendo máxima descentralização, mas podem ser limitadas em escalabilidade e eficiência energética. Elas são mais apropriadas para sistemas que exigem alta resistência a censura.
+
+Segurança: 9/10 – Máxima segurança e descentralização, adequadas para sistemas de pagamento e redes públicas com alta resiliência.
+Escalabilidade: 6/10 – Escalabilidade limitada, especialmente em redes PoW.
+Eficiência Energética: 5/10 – PoW consome grandes quantidades de energia, o que é uma desvantagem significativa.
+Governança: 8.5/10 – Descentralizada, com forte participação da comunidade.
+Interoperabilidade: 5.5/10 – Integração limitada com sistemas de saúde legados, devido à complexidade e falta de customização.
+Complexidade Operacional: 5/10 – Alta complexidade devido à necessidade de descentralização e segurança.
+Custo de Implementação: 5.5/10 – Custos elevados para garantir descentralização e segurança.
+Latência: 5/10 – Latência alta, o que pode inviabilizar seu uso em situações críticas de saúde.
+Exemplo de DLT: Bitcoin (PoW), Ethereum 1.0 (PoW)
+
+Grupo de Algoritmos de Consenso: Alta Descentralização e Segurança de Dados Críticos
+Algoritmos Específicos: PoW (Proof of Work), PoS (Proof of Stake)
