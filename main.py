@@ -59,7 +59,11 @@ def login_page(db):
 
 # Função para exibir perguntas e recomendar DLT para saúde com base em regras
 def dlt_recomendation_rules(respostas_usuario):
+    if not respostas_usuario:
+        return None
     # Exemplo de regras simples para recomendação de DLT
+    if len(respostas_usuario) < 4:
+        return None  # Retorna None se não houver respostas suficientes
     if respostas_usuario[0] == 1 and respostas_usuario[1] == 1:
         return "Hyperledger"
     elif respostas_usuario[2] == 1 and respostas_usuario[3] == 1:
@@ -118,30 +122,37 @@ def dlt_questionnaire_page(db):
         resposta = st.radio(descricao, ["Sim", "Não"], key=f"pergunta_{id_pergunta}")
         respostas_usuario.append(1 if resposta == "Sim" else 0)
 
-    # Seleção do tipo de abordagem
-    st.write("Selecione a abordagem para gerar a recomendação:")
-    abordagem = st.selectbox("Escolha a abordagem", ["Baseada em Regras", "Híbrida (Regras + Machine Learning)"])
-
+    # Moved outside the loop
     if st.button("Obter Recomendação"):
-        if abordagem == "Baseada em Regras":
-            # Abordagem baseada em regras
-            dlt_recomendada = dlt_recomendation_rules(respostas_usuario)
-            st.write(f"**DLT Recomendada (Regras):** {dlt_recomendada}")
-        elif abordagem == "Híbrida (Regras + Machine Learning)":
-            # Abordagem híbrida
-            dlt_inicial, dlt_final = dlt_hybrid_recommendation(db, respostas_usuario)
-            st.write(f"**DLT Inicial Recomendada (Regras):** {dlt_inicial}")
-            st.write(f"**DLT Final Refinada (Machine Learning):** {dlt_final}")
+        if not respostas_usuario:
+            st.error("Por favor, responda pelo menos uma pergunta antes de enviar.")
+        else:
+            # Seleção do tipo de abordagem
+            st.write("Selecione a abordagem para gerar a recomendação:")
+            abordagem = st.selectbox("Escolha a abordagem", ["Baseada em Regras", "Híbrida (Regras + Machine Learning)"])
 
-        # Gravar as respostas no banco de dados e calcular métricas
-        calcular_metricas(db, dlt_recomendada if abordagem == "Baseada em Regras" else dlt_final, respostas_usuario)
+            if abordagem == "Baseada em Regras":
+                # Abordagem baseada em regras
+                dlt_recomendada = dlt_recomendation_rules(respostas_usuario)
+                if dlt_recomendada:
+                    st.write(f"**DLT Recomendada (Regras):** {dlt_recomendada}")
+                else:
+                    st.error("Respostas insuficientes para gerar recomendação.")
+            elif abordagem == "Híbrida (Regras + Machine Learning)":
+                # Abordagem híbrida
+                dlt_inicial, dlt_final = dlt_hybrid_recommendation(db, respostas_usuario)
+                st.write(f"**DLT Inicial Recomendada (Regras):** {dlt_inicial}")
+                st.write(f"**DLT Final Refinada (Machine Learning):** {dlt_final}")
 
-        # Gravar as respostas do usuário
-        with db.conn.cursor() as cur:
-            for i, resposta in enumerate(respostas_usuario):
-                cur.execute("INSERT INTO respostasusuarios (id_pergunta, resposta, id_usuario) VALUES (%s, %s, %s)", 
-                            (perguntas[i][0], resposta, st.session_state['user_id']))
-            db.conn.commit()
+            # Gravar as respostas no banco de dados e calcular métricas
+            calcular_metricas(db, dlt_recomendada if abordagem == "Baseada em Regras" else dlt_final, respostas_usuario)
+
+            # Gravar as respostas do usuário
+            with db.conn.cursor() as cur:
+                for i, resposta in enumerate(respostas_usuario):
+                    cur.execute("INSERT INTO respostasusuarios (id_pergunta, resposta, id_usuario) VALUES (%s, %s, %s)", 
+                                (perguntas[i][0], resposta, st.session_state['user_id']))
+                db.conn.commit()
 
 # Função principal para controle da aplicação
 def main():
