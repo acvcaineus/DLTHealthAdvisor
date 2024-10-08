@@ -88,8 +88,19 @@ def calcular_metricas(db, framework, respostas_usuario):
     pontuacao = gini * len(respostas_usuario)
 
     with db.conn.cursor() as cur:
+        # Buscar o ID do Framework
+        cur.execute("SELECT id FROM dlt_frameworks WHERE name = %s", (framework,))
+        result = cur.fetchone()
+        
+        if result is None:
+            st.error(f"Framework '{framework}' não encontrado.")
+            return
+        
+        framework_id = result[0]
+        
+        # Inserção da Pontuação
         cur.execute("INSERT INTO pontuacaoframeworks (id_framework, id_usuario, pontuacao) VALUES (%s, %s, %s)", 
-                    (framework, st.session_state['user_id'], pontuacao))
+                    (framework_id, st.session_state['user_id'], pontuacao))
         db.conn.commit()
 
 def dlt_questionnaire_page(db):
