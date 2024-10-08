@@ -1,11 +1,23 @@
 import streamlit as st
 import psycopg2
 import hashlib
-from database import Database
-from sklearn import tree
-import numpy as np
 import pandas as pd
+import numpy as np
+from sklearn import tree
+from database import Database
 from decision_tree import DecisionTreeRecommender
+import logging
+import os
+import plotly.graph_objs as go
+
+# Configure logging
+log_file = 'app.log'
+logging.basicConfig(level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    handlers=[
+                        logging.FileHandler(log_file),
+                        logging.StreamHandler()
+                    ])
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -18,7 +30,8 @@ def authenticate_user(db, username, password):
             user = cur.fetchone()
             return user is not None, user
     except psycopg2.Error as e:
-        st.error(f"Erro ao verificar o login: {e}")
+        logging.error(f"Error verifying login: {e}")
+        st.error(f"Error verifying login: {e}")
         return False, None
 
 def register_user(db, username, password):
@@ -27,83 +40,54 @@ def register_user(db, username, password):
 
 def login_page(db):
     st.title("Login")
-    login_username = st.text_input("Nome de Usuário")
-    login_password = st.text_input("Senha", type="password")
+    login_username = st.text_input("Username")
+    login_password = st.text_input("Password", type="password")
 
-    if st.button("Entrar"):
+    if st.button("Login"):
         authenticated, user = authenticate_user(db, login_username, login_password)
         if authenticated:
             st.session_state['logged_in'] = True
             st.session_state['username'] = login_username
             st.session_state['user_id'] = user[0]
             st.experimental_set_query_params(logged_in="True")
+            logging.info(f"User {login_username} logged in successfully")
             st.rerun()
         else:
-            st.error("Nome de usuário ou senha incorretos.")
+            st.error("Incorrect username or password.")
 
     st.write("---")
-    st.write("Ou registre um novo usuário abaixo:")
+    st.write("Or register a new user below:")
 
-    register_username = st.text_input("Novo Nome de Usuário")
-    register_password = st.text_input("Nova Senha", type="password")
-    if st.button("Registrar Novo Usuário"):
+    register_username = st.text_input("New Username")
+    register_password = st.text_input("New Password", type="password")
+    if st.button("Register New User"):
         if register_username and register_password:
             if register_user(db, register_username, register_password):
-                st.success(f"Usuário {register_username} registrado com sucesso! Por favor, faça login.")
+                logging.info(f"User {register_username} registered successfully")
+                st.success(f"User {register_username} registered successfully! Please login.")
             else:
-                st.error(f"Falha ao registrar o usuário {register_username}.")
+                logging.error(f"Failed to register user {register_username}")
+                st.error(f"Failed to register user {register_username}.")
         else:
-            st.warning("Por favor, preencha todos os campos.")
+            st.warning("Please fill in all fields.")
 
-def dlt_recomendation_rules(respostas_usuario):
-    if not respostas_usuario:
-        return None
-    if len(respostas_usuario) < 4:
-        return None
-    if respostas_usuario[0] == 1 and respostas_usuario[1] == 1:
-        return "Hyperledger"
-    elif respostas_usuario[2] == 1 and respostas_usuario[3] == 1:
-        return "IOTA"
-    elif respostas_usuario[0] == 0 and respostas_usuario[3] == 1:
-        return "Ethereum"
-    else:
-        return "Corda"
-
-def treinar_modelo(db):
-    X = np.array([[1, 1, 1, 0], [0, 1, 0, 1], [1, 0, 1, 1], [0, 0, 0, 0]])
-    y = np.array(['Hyperledger', 'Ethereum', 'IOTA', 'Corda'])
-
-    clf = tree.DecisionTreeClassifier()
-    clf = clf.fit(X, y)
-    return clf
-
-def dlt_hybrid_recommendation(db, respostas_usuario):
-    dlt_inicial = dlt_recomendation_rules(respostas_usuario)
-    clf = treinar_modelo(db)
-    dlt_final = clf.predict([respostas_usuario])[0]
-    return dlt_inicial, dlt_final
-
-def calcular_metricas(db, framework, respostas_usuario):
-    gini = 1 - sum((respostas_usuario.count(val) / len(respostas_usuario)) ** 2 for val in set(respostas_usuario))
-    pontuacao = gini * len(respostas_usuario)
-
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT id FROM dlt_frameworks WHERE name = %s", (framework,))
-        result = cur.fetchone()
-        
-        if result is None:
-            st.error(f"Framework '{framework}' não encontrado.")
-            return
-        
-        framework_id = result[0]
-        
-        cur.execute("INSERT INTO pontuacaoframeworks (id_framework, id_usuario, pontuacao) VALUES (%s, %s, %s)", 
-                    (framework_id, st.session_state['user_id'], pontuacao))
-        db.conn.commit()
+def plot_sensitivity_analysis(sensitivity_results):
+    features = list(sensitivity_results.keys())
+    sensitivities = list(sensitivity_results.values())
+    
+    fig = go.Figure(data=[go.Bar(x=features, y=sensitivities)])
+    fig.update_layout(
+        title="Sensitivity Analysis",
+        xaxis_title="Features",
+        yaxis_title="Sensitivity",
+        yaxis_range=[0, 1]
+    )
+    return fig
 
 def dlt_questionnaire_page(db):
-    st.title("Recomendação de DLT para Saúde")
+    st.title("DLT Recommendation for Healthcare")
 
+    logging.info("Fetching questions from the database")
     with db.conn.cursor() as cur:
         cur.execute("SELECT id, descricao FROM perguntasframework")
         perguntas = cur.fetchall()
@@ -112,194 +96,91 @@ def dlt_questionnaire_page(db):
 
     for pergunta in perguntas:
         id_pergunta, descricao = pergunta
-        resposta = st.radio(descricao, ["Sim", "Não"], key=f"pergunta_{id_pergunta}")
-        respostas_usuario[id_pergunta] = 1 if resposta == "Sim" else 0
+        resposta = st.radio(descricao, ["Yes", "No"], key=f"pergunta_{id_pergunta}")
+        respostas_usuario[id_pergunta] = 1 if resposta == "Yes" else 0
 
-    if st.button("Obter Recomendação"):
+    if st.button("Get Recommendation"):
         if not respostas_usuario:
-            st.error("Por favor, responda pelo menos uma pergunta antes de enviar.")
+            st.error("Please answer at least one question before submitting.")
         else:
-            st.write("Selecione a abordagem para gerar a recomendação:")
-            abordagem = st.selectbox("Escolha a abordagem", ["Baseada em Regras", "Híbrida (Regras + Machine Learning)"])
+            logging.info("Generating DLT recommendation")
+            st.write("Select the approach to generate the recommendation:")
+            abordagem = st.selectbox("Choose the approach", ["Rule-based", "Hybrid (Rules + Machine Learning)"])
 
-            if abordagem == "Baseada em Regras":
+            if abordagem == "Rule-based":
                 dlt_recomendada = dlt_recomendation_rules(list(respostas_usuario.values()))
                 if dlt_recomendada:
-                    st.write(f"**DLT Recomendada (Regras):** {dlt_recomendada}")
+                    st.write(f"**Recommended DLT (Rules):** {dlt_recomendada}")
                 else:
-                    st.error("Respostas insuficientes para gerar recomendação.")
-            elif abordagem == "Híbrida (Regras + Machine Learning)":
+                    st.error("Insufficient responses to generate recommendation.")
+            elif abordagem == "Hybrid (Rules + Machine Learning)":
                 recommender = DecisionTreeRecommender()
                 dlt_recomendada = recommender.get_recommendations(respostas_usuario)[0]
-                st.write(f"**DLT Recomendada (Híbrida):** {dlt_recomendada}")
+                st.write(f"**Recommended DLT (Hybrid):** {dlt_recomendada}")
 
-                st.subheader("Importância das Características")
+                st.subheader("Feature Importance")
                 feature_importances = recommender.get_feature_importances()
                 for feature, importance in feature_importances.items():
                     st.write(f"{feature}: {importance:.4f}")
 
-                st.subheader("Análise de Sensibilidade")
+                st.subheader("Sensitivity Analysis")
                 sensitivity_results = recommender.sensitivity_analysis(respostas_usuario)
-                for feature, sensitivity in sensitivity_results.items():
-                    st.write(f"{feature}: {sensitivity:.4f}")
+                st.plotly_chart(plot_sensitivity_analysis(sensitivity_results))
+                st.write("The sensitivity analysis shows the probability of change in recommendation when varying each feature.")
 
-                st.write("A análise de sensibilidade mostra a probabilidade de mudança na recomendação ao variar cada característica.")
-
+            logging.info(f"Calculating metrics for recommended DLT: {dlt_recomendada}")
             calcular_metricas(db, dlt_recomendada, list(respostas_usuario.values()))
 
+            logging.info("Saving user responses to the database")
             with db.conn.cursor() as cur:
                 for id_pergunta, resposta in respostas_usuario.items():
                     cur.execute("INSERT INTO respostasusuarios (id_pergunta, resposta, id_usuario) VALUES (%s, %s, %s)", 
                                 (id_pergunta, resposta, st.session_state['user_id']))
                 db.conn.commit()
 
-def add_consensus_algorithms_page(db):
-    st.title("Algoritmos de Consenso")
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT * FROM dlt_consensus_algorithms")
-        algorithms = cur.fetchall()
-    
-    for algo in algorithms:
-        st.subheader(algo[1])
-        st.write(f"Grupo de Consenso: {algo[2]}")
-        st.write(f"Descrição: {algo[3]}")
-        st.write(f"Característica Prioritária: {algo[4]}")
-        st.write(f"Casos de Uso: {', '.join(algo[5])}")
-        st.write(f"Principais Características: {algo[6]}")
-        st.write("---")
-
-def add_framework_use_cases_page(db):
-    st.title("Casos de Uso de Frameworks")
+def add_dlt_frameworks_page(db):
+    st.title("DLT Frameworks")
+    logging.info("Fetching DLT frameworks from the database")
     with db.conn.cursor() as cur:
         cur.execute("""
-            SELECT f.name, u.use_case, fu.relevant_criteria 
-            FROM dlt_framework_use_cases fu
-            JOIN dlt_frameworks f ON fu.framework_id = f.id
-            JOIN dlt_use_cases u ON fu.use_case_id = u.id
+            SELECT 
+                name, tipo_dlt, grupo_algoritmo, algoritmo_consenso, principais_caracteristicas, 
+                security, scalability, energy_efficiency, governance, latency 
+            FROM dlt_frameworks
         """)
-        use_cases = cur.fetchall()
-    
-    for case in use_cases:
-        st.subheader(f"{case[0]} - {case[1]}")
-        st.write(f"Critérios Relevantes: {case[2]}")
-        st.write("---")
-
-def add_dlt_frameworks_page(db):
-    st.title("Frameworks DLT")
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT * FROM dlt_frameworks")
         frameworks = cur.fetchall()
-    
-    for fw in frameworks:
-        st.subheader(fw[1])
-        st.write(f"Segurança: {fw[2]}")
-        st.write(f"Escalabilidade: {fw[3]}")
-        st.write(f"Eficiência Energética: {fw[4]}")
-        st.write(f"Governança: {fw[5]}")
-        st.write(f"Interoperabilidade: {fw[6]}")
-        st.write(f"Complexidade Operacional: {fw[7]}")
-        st.write(f"Custo de Implementação: {fw[8]}")
-        st.write(f"Latência: {fw[9]}")
-        st.write(f"Algoritmos de Exemplo: {fw[18]}")
-        st.write("---")
 
-def add_training_data_page(db):
-    st.title("Dados de Treinamento")
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT * FROM dlt_training_data")
-        data = cur.fetchall()
-    
-    df = pd.DataFrame(data, columns=['id', 'framework', 'Security', 'Scalability', 'Energy_efficiency', 'Governance', 'Operational_Complexity', 'Latency', 'Integration', 'Interoperability', 'Implementation_Cost', 'Privacy', 'Data_Volume'])
+    df = pd.DataFrame(frameworks, columns=[
+        'Name', 'DLT Type', 'Algorithm Group', 'Consensus Algorithm', 'Main Characteristics',
+        'Security', 'Scalability', 'Energy Efficiency', 'Governance', 'Latency'
+    ])
+
     st.dataframe(df)
 
-def add_dlt_use_cases_page(db):
-    st.title("Casos de Uso DLT")
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT * FROM dlt_use_cases")
-        use_cases = cur.fetchall()
-    
-    if not use_cases:
-        st.write("Não há casos de uso DLT disponíveis no momento.")
-    else:
-        for case in use_cases:
-            st.subheader(case[1] if len(case) > 1 else "Caso de Uso Sem Título")
-            st.write(f"Descrição: {case[2] if len(case) > 2 else 'Não disponível'}")
-            st.write(f"Benefícios: {case[3] if len(case) > 3 else 'Não disponível'}")
-            st.write(f"Desafios: {case[4] if len(case) > 4 else 'Não disponível'}")
-            st.write("---")
-
-def add_user_comparisons_page(db):
-    st.title("Comparações de Usuários")
-    with db.conn.cursor() as cur:
-        cur.execute("""
-            SELECT u.username, f1.name as framework1, f2.name as framework2, c.metrica1, c.metrica2, c.descricao_comparacao
-            FROM comparacaoframeworks c
-            JOIN users u ON c.id_usuario = u.id
-            JOIN dlt_frameworks f1 ON c.id_framework_1 = f1.id
-            JOIN dlt_frameworks f2 ON c.id_framework_2 = f2.id
-        """)
-        comparisons = cur.fetchall()
-    
-    for comp in comparisons:
-        st.subheader(f"Comparação por {comp[0]}")
-        st.write(f"Framework 1: {comp[1]}")
-        st.write(f"Framework 2: {comp[2]}")
-        st.write(f"Métrica 1: {comp[3]}")
-        st.write(f"Métrica 2: {comp[4]}")
-        st.write(f"Descrição da Comparação: {comp[5]}")
-        st.write("---")
-
-def add_user_admin_page(db):
-    st.title("Administração de Usuários")
-    if st.session_state.get('is_admin', False):
-        with db.conn.cursor() as cur:
-            cur.execute("SELECT id, username FROM users")
-            users = cur.fetchall()
-        
-        for user in users:
-            st.write(f"ID: {user[0]}, Username: {user[1]}")
-            if st.button(f"Delete {user[1]}"):
-                pass
-    else:
-        st.write("Você não tem permissão para acessar esta página.")
-
 def main():
+    logging.info("Starting the application")
     db = Database()
 
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
 
     if st.session_state['logged_in']:
-        st.sidebar.success(f"Bem-vindo, {st.session_state['username']}")
+        st.sidebar.success(f"Welcome, {st.session_state['username']}")
 
-        if st.sidebar.button("Sair"):
+        if st.sidebar.button("Logout"):
+            logging.info(f"User {st.session_state['username']} logged out")
             st.session_state['logged_in'] = False
             st.experimental_set_query_params(logged_in="False")
             st.rerun()
 
-        menu = ["Recomendação de DLT", "Algoritmos de Consenso", "Casos de Uso de Frameworks", 
-                "Frameworks DLT", "Dados de Treinamento", "Casos de Uso DLT", 
-                "Comparações de Usuários", "Administração de Usuários"]
+        menu = ["DLT Recommendation", "DLT Frameworks"]
 
         choice = st.sidebar.selectbox("Menu", menu)
 
-        if choice == "Recomendação de DLT":
+        if choice == "DLT Recommendation":
             dlt_questionnaire_page(db)
-        elif choice == "Algoritmos de Consenso":
-            add_consensus_algorithms_page(db)
-        elif choice == "Casos de Uso de Frameworks":
-            add_framework_use_cases_page(db)
-        elif choice == "Frameworks DLT":
+        elif choice == "DLT Frameworks":
             add_dlt_frameworks_page(db)
-        elif choice == "Dados de Treinamento":
-            add_training_data_page(db)
-        elif choice == "Casos de Uso DLT":
-            add_dlt_use_cases_page(db)
-        elif choice == "Comparações de Usuários":
-            add_user_comparisons_page(db)
-        elif choice == "Administração de Usuários":
-            add_user_admin_page(db)
-
     else:
         login_page(db)
 
