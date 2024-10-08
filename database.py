@@ -24,14 +24,14 @@ class Database:
             cur.execute('''
                 CREATE TABLE IF NOT EXISTS dlt_training_data (
                     id SERIAL PRIMARY KEY,
-                    security BOOLEAN,
-                    scalability BOOLEAN,
-                    energy_efficiency BOOLEAN,
-                    governance BOOLEAN,
-                    interoperability BOOLEAN,
-                    operational_complexity BOOLEAN,
-                    implementation_cost BOOLEAN,
-                    latency BOOLEAN,
+                    security FLOAT,
+                    scalability FLOAT,
+                    energy_efficiency FLOAT,
+                    governance FLOAT,
+                    interoperability FLOAT,
+                    operational_complexity FLOAT,
+                    implementation_cost FLOAT,
+                    latency FLOAT,
                     framework VARCHAR(50)
                 )
             ''')
@@ -52,8 +52,7 @@ class Database:
         self.conn.commit()
 
     def get_training_data(self):
-        self.create_tables()  # Ensure table exists
-        query = "SELECT * FROM dlt_training_data"
+        query = "SELECT security, scalability, energy_efficiency, governance, interoperability, operational_complexity, implementation_cost, latency, framework FROM dlt_training_data"
         try:
             return pd.read_sql_query(query, self.conn)
         except Exception as e:
@@ -70,7 +69,7 @@ class Database:
                     cur.execute('''
                         INSERT INTO dlt_training_data (security, scalability, energy_efficiency, governance, interoperability, operational_complexity, implementation_cost, latency, framework)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ''', (True, True, True, True, True, True, True, True, row['name']))
+                    ''', (row['Security'], row['Scalability'], row['Energy Efficiency'], row['Governance'], row['Interoperability'], row['Operational Complexity'], row['Implementation Cost'], row['Latency'], row['name']))
                 self.conn.commit()
         except Exception as e:
             print(f"Error populating training data: {e}")
