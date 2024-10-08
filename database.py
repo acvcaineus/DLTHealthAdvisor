@@ -2,6 +2,7 @@ import psycopg2
 import os
 import logging
 import streamlit as st
+import pandas as pd
 
 # Configuração de logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s', filename='app_errors.log')
@@ -227,6 +228,24 @@ class Database:
             logging.error(f"Erro ao criar usuário {username}: {e}")
             self.conn.rollback()
             return None
+
+    def get_training_data(self):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute("""
+                    SELECT framework, Security, Scalability, Energy_efficiency, Governance,
+                           Interoperability, Operational_Complexity, Implementation_Cost, Latency
+                    FROM dlt_training_data
+                """)
+                data = cur.fetchall()
+                columns = ['framework', 'security', 'scalability', 'energy_efficiency', 'governance',
+                           'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
+                df = pd.DataFrame(data, columns=columns)
+                return df
+        except psycopg2.Error as e:
+            st.error(f"Error retrieving training data: {e}")
+            logging.error(f"Error retrieving training data: {e}")
+            return pd.DataFrame()
 
     def __del__(self):
         """Fecha a conexão com o banco de dados quando o objeto Database for destruído."""

@@ -5,6 +5,7 @@ from database import Database
 from sklearn import tree
 import numpy as np
 import pandas as pd
+from decision_tree import DecisionTreeRecommender
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -98,12 +99,12 @@ def dlt_questionnaire_page(db):
         cur.execute("SELECT id, descricao FROM perguntasframework")
         perguntas = cur.fetchall()
 
-    respostas_usuario = []
+    respostas_usuario = {}
 
     for pergunta in perguntas:
         id_pergunta, descricao = pergunta
         resposta = st.radio(descricao, ["Sim", "Não"], key=f"pergunta_{id_pergunta}")
-        respostas_usuario.append(1 if resposta == "Sim" else 0)
+        respostas_usuario[id_pergunta] = 1 if resposta == "Sim" else 0
 
     if st.button("Obter Recomendação"):
         if not respostas_usuario:
@@ -113,22 +114,36 @@ def dlt_questionnaire_page(db):
             abordagem = st.selectbox("Escolha a abordagem", ["Baseada em Regras", "Híbrida (Regras + Machine Learning)"])
 
             if abordagem == "Baseada em Regras":
-                dlt_recomendada = dlt_recomendation_rules(respostas_usuario)
+                dlt_recomendada = dlt_recomendation_rules(list(respostas_usuario.values()))
                 if dlt_recomendada:
                     st.write(f"**DLT Recomendada (Regras):** {dlt_recomendada}")
                 else:
                     st.error("Respostas insuficientes para gerar recomendação.")
             elif abordagem == "Híbrida (Regras + Machine Learning)":
-                dlt_inicial, dlt_final = dlt_hybrid_recommendation(db, respostas_usuario)
-                st.write(f"**DLT Inicial Recomendada (Regras):** {dlt_inicial}")
-                st.write(f"**DLT Final Refinada (Machine Learning):** {dlt_final}")
+                recommender = DecisionTreeRecommender()
+                dlt_recomendada = recommender.get_recommendations(respostas_usuario)[0]
+                st.write(f"**DLT Recomendada (Híbrida):** {dlt_recomendada}")
 
-            calcular_metricas(db, dlt_recomendada if abordagem == "Baseada em Regras" else dlt_final, respostas_usuario)
+                # Feature Importance
+                st.subheader("Importância das Características")
+                feature_importances = recommender.get_feature_importances()
+                for feature, importance in feature_importances.items():
+                    st.write(f"{feature}: {importance:.4f}")
+
+                # Sensitivity Analysis
+                st.subheader("Análise de Sensibilidade")
+                sensitivity_results = recommender.sensitivity_analysis(respostas_usuario)
+                for feature, sensitivity in sensitivity_results.items():
+                    st.write(f"{feature}: {sensitivity:.4f}")
+
+                st.write("A análise de sensibilidade mostra a probabilidade de mudança na recomendação ao variar cada característica.")
+
+            calcular_metricas(db, dlt_recomendada, list(respostas_usuario.values()))
 
             with db.conn.cursor() as cur:
-                for i, resposta in enumerate(respostas_usuario):
+                for id_pergunta, resposta in respostas_usuario.items():
                     cur.execute("INSERT INTO respostasusuarios (id_pergunta, resposta, id_usuario) VALUES (%s, %s, %s)", 
-                                (perguntas[i][0], resposta, st.session_state['user_id']))
+                                (id_pergunta, resposta, st.session_state['user_id']))
                 db.conn.commit()
 
 def add_consensus_algorithms_page(db):
