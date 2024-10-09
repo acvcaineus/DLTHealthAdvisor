@@ -8,8 +8,7 @@ class DecisionTreeRecommender:
     def __init__(self):
         self.decision_tree = DecisionTreeClassifier(random_state=42)
         self.label_encoder = LabelEncoder()
-        self.features = ['security', 'scalability', 'energy_efficiency', 'governance',
-                         'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
+        self.features = ['privacy', 'integration', 'data_volume', 'energy_efficiency', 'Security', 'Scalability', 'Governance', 'Interoperability', 'Operational Complexity', 'Implementation Cost', 'Latency']
         self.target = 'framework'
         self.scaler = StandardScaler()
         self.train_model()
@@ -27,10 +26,10 @@ class DecisionTreeRecommender:
             raise ValueError(f"None of the expected features {self.features} are in the training data columns: {training_data.columns}")
 
         X = self.scaler.fit_transform(training_data[available_features])
-        y = self.label_encoder.fit_transform(training_data[self.target])
+        y = self.label_encoder.fit_transform(training_data['framework'])
 
         # Feature selection
-        selector = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=42), max_features=min(4, len(available_features)))
+        selector = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=42), max_features=min(6, len(available_features)))
         X_selected = selector.fit_transform(X, y)
         self.selected_features = [feature for feature, selected in zip(available_features, selector.get_support()) if selected]
 

@@ -6,43 +6,58 @@ import json
 def get_user_responses():
     responses = {}
     
-    responses['security'] = st.radio(
-        "1. Is high security against attacks (including Byzantine attacks) crucial for your application?",
+    responses['privacy'] = st.radio(
+        "1. Is data privacy a critical concern for your application?",
         ('Yes', 'No')
     ) == 'Yes'
     
-    responses['scalability'] = st.radio(
-        "2. Does your application need to support a large volume of transactions and participants?",
+    responses['integration'] = st.radio(
+        "2. Do you need seamless integration with existing healthcare systems?",
+        ('Yes', 'No')
+    ) == 'Yes'
+    
+    responses['data_volume'] = st.radio(
+        "3. Do you expect to handle large volumes of data?",
         ('Yes', 'No')
     ) == 'Yes'
     
     responses['energy_efficiency'] = st.radio(
-        "3. Is energy efficiency a critical factor for your network?",
+        "4. Is energy efficiency a critical factor for your network?",
         ('Yes', 'No')
     ) == 'Yes'
     
-    responses['governance'] = st.radio(
-        "4. Do you require flexible governance that can be centralized or decentralized?",
+    responses['Security'] = st.radio(
+        "5. Do you require high-level security measures?",
         ('Yes', 'No')
     ) == 'Yes'
     
-    responses['interoperability'] = st.radio(
-        "5. Is easy integration with legacy systems (e.g., EHRs) and other health systems important?",
+    responses['Scalability'] = st.radio(
+        "6. Is scalability a key requirement for your application?",
         ('Yes', 'No')
     ) == 'Yes'
     
-    responses['operational_complexity'] = st.radio(
-        "6. Is low operational complexity for implementation and maintenance in the healthcare environment important?",
+    responses['Governance'] = st.radio(
+        "7. Do you need flexible governance options?",
         ('Yes', 'No')
     ) == 'Yes'
     
-    responses['implementation_cost'] = st.radio(
-        "7. Is low implementation cost a priority for your project?",
+    responses['Interoperability'] = st.radio(
+        "8. Is interoperability with other blockchain networks important?",
         ('Yes', 'No')
     ) == 'Yes'
     
-    responses['latency'] = st.radio(
-        "8. Is low latency crucial for your application, especially for real-time health monitoring?",
+    responses['Operational Complexity'] = st.radio(
+        "9. Can you handle high operational complexity?",
+        ('Yes', 'No')
+    ) == 'Yes'
+    
+    responses['Implementation Cost'] = st.radio(
+        "10. Is low implementation cost a priority?",
+        ('Yes', 'No')
+    ) == 'Yes'
+    
+    responses['Latency'] = st.radio(
+        "11. Do you require low latency for your applications?",
         ('Yes', 'No')
     ) == 'Yes'
     
