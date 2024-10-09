@@ -152,17 +152,16 @@ class Database:
             return None
 
     def get_training_data(self):
-        """Recupera os dados de treinamento do banco de dados."""
         try:
             with self.conn.cursor() as cur:
-                cur.execute("""
-                    SELECT framework, Security, Scalability, Energy_efficiency, Governance,
+                cur.execute('''
+                    SELECT framework, Security, Scalability, Energy_Efficiency, Governance,
                            Interoperability, Operational_Complexity, Implementation_Cost, Latency
                     FROM dlt_training_data
-                """)
+                ''')
                 data = cur.fetchall()
-                columns = ['framework', 'security', 'scalability', 'energy_efficiency', 'governance',
-                           'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
+                columns = ['framework', 'Security', 'Scalability', 'Energy_Efficiency', 'Governance',
+                           'Interoperability', 'Operational_Complexity', 'Implementation_Cost', 'Latency']
                 df = pd.DataFrame(data, columns=columns)
                 return df
         except psycopg2.Error as e:
