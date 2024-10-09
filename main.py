@@ -6,6 +6,7 @@ import time
 import os
 from database import Database
 from decision_tree import DecisionTreeRecommender
+from auth import create_user, authenticate_user
 
 # Configuração de logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s', filename='app_errors.log')
@@ -87,7 +88,7 @@ def dlt_questionnaire_page(db):
         st.write("Respostas:", respostas_usuario)
         calcular_metricas(db, respostas_usuario)
     
-    # Move sensitivity analysis outside the button click event
+    # Perform sensitivity analysis
     perform_sensitivity_analysis(respostas_usuario)
 
 def calcular_metricas(db, respostas_usuario):
@@ -117,17 +118,41 @@ def main():
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
 
+    if not st.session_state['logged_in']:
+        st.title("Login / Register")
+        
+        login_tab, register_tab = st.tabs(["Login", "Register"])
+        
+        with login_tab:
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            if st.button("Login"):
+                user = authenticate_user(username, password)
+                if user:
+                    st.session_state['logged_in'] = True
+                    st.session_state['user_id'] = user.id
+                    st.session_state['username'] = user.username
+                    st.experimental_rerun()
+                else:
+                    st.error("Invalid username or password")
+        
+        with register_tab:
+            new_username = st.text_input("New Username")
+            new_password = st.text_input("New Password", type="password")
+            if st.button("Register"):
+                user_id = create_user(new_username, new_password)
+                if user_id:
+                    st.success("Registration successful. Please log in.")
+                else:
+                    st.error("Registration failed. Username may already exist.")
+    
     if st.session_state['logged_in']:
-        st.sidebar.success(f"Bem-vindo, {st.session_state['username']}")
-
-        if st.sidebar.button("Sair"):
+        st.sidebar.success(f"Welcome, {st.session_state['username']}")
+        if st.sidebar.button("Logout"):
             st.session_state['logged_in'] = False
-            st.experimental_set_query_params(logged_in="False")
-            st.rerun()
-
+            st.experimental_rerun()
+        
         dlt_questionnaire_page(db)
-    else:
-        st.error("Por favor, faça login primeiro.")
 
 if __name__ == '__main__':
     main()
