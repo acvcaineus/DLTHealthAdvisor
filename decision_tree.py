@@ -4,6 +4,9 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
 
+# Add error handling for divide operations
+np.seterr(divide='ignore', invalid='ignore')
+
 class DecisionTreeRecommender:
     def __init__(self):
         self.decision_tree = DecisionTreeClassifier(random_state=42)

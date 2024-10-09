@@ -59,6 +59,18 @@ class Database:
             logging.error(f"Error retrieving user {username}: {e}")
             return None
 
+    def create_user(self, username, password_hash):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id", (username, password_hash))
+                user_id = cur.fetchone()[0]
+                self.conn.commit()
+                return user_id
+        except psycopg2.Error as e:
+            st.error(f"Error creating user: {e}")
+            logging.error(f"Error creating user {username}: {e}")
+            return None
+
     def __del__(self):
         """Fecha a conexão com o banco de dados quando o objeto Database for destruído."""
         if hasattr(self, 'conn') and self.conn:

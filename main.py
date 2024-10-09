@@ -1,133 +1,76 @@
 import streamlit as st
-import psycopg2
-import logging
-import plotly.graph_objects as go
-import time
 from database import Database
-from auth import create_user, authenticate_user
-from decision_tree import DecisionTreeRecommender
-from utils import get_user_responses, calculate_metrics, generate_explanation, export_to_csv
-from visualization import visualize_decision_tree, visualize_comparison, create_radar_chart, create_heatmap, create_parallel_coordinates, create_grouped_bar_chart
-from api import app as api_app
-import threading
+import hashlib
 
-# Configuração de logging
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s', filename='app_errors.log')
+# Função para gerar o hash da senha
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-def run_api():
-    api_app.run(host='0.0.0.0', port=5001)
+# Página de criação de usuário
+def create_user_page(db):
+    st.title("Registrar Usuário")
 
-def dlt_questionnaire_page(db, recommender):
-    st.title("DLT Framework Recommender for Healthcare")
-    
-    training_data = db.get_training_data()
-    if training_data.empty:
-        st.error("No training data available. Please contact the administrator.")
-        return
+    new_username = st.text_input("Nome de Usuário")
+    new_password = st.text_input("Senha", type="password")
 
-    user_responses = get_user_responses()
-    
-    if st.button("Get Recommendations"):
-        recommendations = recommender.get_recommendations(user_responses)
-        metrics = calculate_metrics(recommender, user_responses)
-        
-        st.subheader("Recommended DLT Frameworks")
-        for i, framework in enumerate(recommendations, 1):
-            st.write(f"{i}. {framework}")
-            st.write(generate_explanation(framework, training_data))
-        
-        st.subheader("Model Metrics")
-        st.write(f"Information Gain: {metrics['information_gain']:.2f}")
-        st.write(f"Tree Depth: {metrics['tree_depth']}")
-        st.write(f"Accuracy: {metrics['accuracy']:.2f}")
-        
-        st.subheader("Decision Tree Visualization")
-        st.plotly_chart(visualize_decision_tree(recommender.decision_tree))
-        
-        st.subheader("Framework Comparison")
-        st.plotly_chart(visualize_comparison(training_data))
-        
-        st.subheader("Multi-dimensional Comparison (Radar Chart)")
-        st.plotly_chart(create_radar_chart(training_data))
-        
-        st.subheader("Framework Heatmap Comparison")
-        st.plotly_chart(create_heatmap(training_data))
-        
-        st.subheader("Parallel Coordinates Comparison")
-        st.plotly_chart(create_parallel_coordinates(training_data))
-        
-        st.subheader("Grouped Bar Chart Comparison")
-        st.plotly_chart(create_grouped_bar_chart(training_data))
-        
-        sensitivity_results = recommender.sensitivity_analysis(user_responses)
-        st.subheader("Sensitivity Analysis")
-        for feature, sensitivity in sensitivity_results.items():
-            st.write(f"{feature}: {sensitivity:.2f}")
-        
-        if st.button("Export Results"):
-            csv = export_to_csv(recommendations, training_data, metrics)
-            st.download_button(
-                label="Download CSV",
-                data=csv,
-                file_name="dlt_recommendations.csv",
-                mime="text/csv"
-            )
+    if st.button("Registrar"):
+        if new_username and new_password:
+            hashed_password = hash_password(new_password)  # Gera o hash da senha
+            user_id = db.create_user(new_username, hashed_password)
+            if user_id:
+                st.success(f"Usuário '{new_username}' registrado com sucesso!")
+            else:
+                st.warning(f"O nome de usuário '{new_username}' já existe.")
+        else:
+            st.warning("Por favor, preencha todos os campos.")
 
+# Página de login do usuário
+def login_page(db):
+    st.title("Login de Usuário")
+
+    username = st.text_input("Nome de Usuário")
+    password = st.text_input("Senha", type="password")
+
+    if st.button("Entrar"):
+        if username and password:
+            hashed_password = hash_password(password)
+            user_id = db.authenticate_user(username, hashed_password)
+            if user_id:
+                st.success(f"Login bem-sucedido! Bem-vindo, {username}.")
+                st.session_state['logged_in'] = True
+                st.session_state['username'] = username
+                st.session_state['user_id'] = user_id
+            else:
+                st.error("Nome de usuário ou senha incorretos.")
+        else:
+            st.warning("Por favor, preencha todos os campos.")
+
+# Função principal
 def main():
-    st.set_page_config(page_title="DLT Framework Recommender", layout="wide")
-    
     db = Database()
-    recommender = DecisionTreeRecommender()
-
-    # Start API server in a separate thread
-    api_thread = threading.Thread(target=run_api)
-    api_thread.start()
 
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
 
-    if not st.session_state['logged_in']:
-        st.title("Welcome to DLT Framework Recommender")
-        st.write("Please login or register to continue.")
+    if st.session_state['logged_in']:
+        st.sidebar.success(f"Bem-vindo, {st.session_state['username']}")
 
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("Login")
-            username = st.text_input("Username", key="login_username")
-            password = st.text_input("Password", type="password", key="login_password")
-            if st.button("Login"):
-                user = authenticate_user(username, password)
-                if user:
-                    st.session_state['logged_in'] = True
-                    st.session_state['user_id'] = user.id
-                    st.session_state['username'] = user.username
-                    st.success("Login successful!")
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials")
-
-        with col2:
-            st.subheader("Register")
-            new_username = st.text_input("New Username", key="register_username")
-            new_password = st.text_input("New Password", type="password", key="register_password")
-            if st.button("Register"):
-                user_id = create_user(new_username, new_password)
-                if user_id:
-                    st.session_state['logged_in'] = True
-                    st.session_state['user_id'] = user_id
-                    st.session_state['username'] = new_username
-                    st.success("Registration successful! You are now logged in.")
-                    st.rerun()
-                else:
-                    st.error("Registration failed")
-    else:
-        st.sidebar.success(f"Welcome, {st.session_state['username']}")
-        if st.sidebar.button("Logout"):
+        if st.sidebar.button("Sair"):
             st.session_state['logged_in'] = False
+            st.experimental_set_query_params(logged_in="False")
             st.rerun()
 
-        dlt_questionnaire_page(db, recommender)
+        st.write("Você está logado!")
+        # Aqui você pode adicionar mais funcionalidades para usuários logados
+
+    else:
+        menu = ["Login", "Registrar-se"]
+        choice = st.sidebar.selectbox("Menu", menu)
+
+        if choice == "Login":
+            login_page(db)
+        elif choice == "Registrar-se":
+            create_user_page(db)
 
 if __name__ == '__main__':
     main()
