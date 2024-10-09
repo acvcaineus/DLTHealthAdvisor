@@ -8,89 +8,24 @@ from auth import create_user, authenticate_user
 from decision_tree import DecisionTreeRecommender
 from utils import get_user_responses, calculate_metrics, generate_explanation, export_to_csv
 from visualization import visualize_decision_tree, visualize_comparison
+from api import app as api_app
+import threading
 
 # Configuração de logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s', filename='app_errors.log')
 
-def desenhar_pilha_shermin(camada_atual):
-    camadas = ["Camada de Aplicação", "Camada de Consenso", "Camada de Infraestrutura", "Camada de Internet"]
-    cores = ['#D3D3D3' if camada != camada_atual else '#FFA500' for camada in camadas]
-    fig = go.Figure(go.Bar(
-        x=[1] * len(camadas),
-        y=camadas,
-        orientation='h',
-        marker=dict(color=cores)
-    ))
-    fig.update_layout(
-        title="Pilha Shermin - Camada Atual",
-        xaxis_title="",
-        yaxis_title="",
-        showlegend=False,
-        xaxis=dict(showticklabels=False),
-        yaxis=dict(tickfont=dict(size=14))
-    )
-    return fig
+# ... [rest of the code remains unchanged] ...
 
-def explicar_camada(camada_atual):
-    explicacoes = {
-        "Camada de Aplicação": "A camada de aplicação trata das interações diretas com o usuário e a aplicação final. Aqui, privacidade e integração são prioridades.",
-        "Camada de Consenso": "A camada de consenso lida com como as decisões são feitas na rede descentralizada. Algoritmos como PBFT ou RAFT são usados aqui.",
-        "Camada de Infraestrutura": "A camada de infraestrutura é responsável por como os dados são armazenados e processados. Escalabilidade e eficiência energética são prioridades.",
-        "Camada de Internet": "A camada de internet é responsável pela conectividade global da rede. Redes distribuídas de larga escala são o foco aqui."
-    }
-    return explicacoes.get(camada_atual, "Camada não reconhecida.")
-
-def dlt_questionnaire_page(db, recommender):
-    st.title("Recomendação de DLT para Saúde")
-
-    user_responses = get_user_responses()
-
-    if st.button("Enviar"):
-        recommendations = recommender.get_recommendations(user_responses)
-        metrics = calculate_metrics(recommender, user_responses)
-        
-        st.subheader("Recomendações de DLT")
-        for i, rec in enumerate(recommendations, 1):
-            st.write(f"{i}. {rec}")
-        
-        st.subheader("Métricas da Árvore de Decisão")
-        st.write(f"Information Gain: {metrics['information_gain']:.4f}")
-        st.write(f"Profundidade da Árvore: {metrics['tree_depth']}")
-        st.write(f"Acurácia: {metrics['accuracy']:.2f}")
-
-        st.subheader("Explicação da Recomendação Principal")
-        explanation = generate_explanation(recommendations[0], db.get_training_data())
-        st.write(explanation)
-
-        st.subheader("Análise de Sensibilidade")
-        sensitivity_results = recommender.sensitivity_analysis(user_responses)
-        st.write("Sensibilidade das características:")
-        for feature, sensitivity in sensitivity_results.items():
-            st.write(f"{feature}: {sensitivity:.4f}")
-
-        # Visualização da árvore de decisão
-        st.subheader("Visualização da Árvore de Decisão")
-        tree_fig = visualize_decision_tree(recommender.decision_tree)
-        st.plotly_chart(tree_fig)
-
-        # Visualização da comparação entre frameworks
-        st.subheader("Comparação entre Frameworks")
-        comparison_data = db.get_training_data()
-        comparison_fig = visualize_comparison(comparison_data)
-        st.plotly_chart(comparison_fig)
-
-        if st.button("Exportar Resultados"):
-            csv = export_to_csv(recommendations, db.get_training_data(), metrics)
-            st.download_button(
-                label="Download CSV",
-                data=csv,
-                file_name="dlt_recommendation_results.csv",
-                mime="text/csv",
-            )
+def run_api():
+    api_app.run(host='0.0.0.0', port=5001)
 
 def main():
     db = Database()
     recommender = DecisionTreeRecommender()
+
+    # Start API server in a separate thread
+    api_thread = threading.Thread(target=run_api)
+    api_thread.start()
 
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False

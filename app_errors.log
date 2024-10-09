@@ -360,3 +360,13 @@ LINE 2:                     SELECT framework, security, scalability,...
                                               ^
 HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
 
+2024-10-09 03:12:52,865 - ERROR - Erro ao recuperar dados de treinamento: column "security" does not exist
+LINE 2:                     SELECT framework, security, scalability,...
+                                              ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 03:13:24,868 - ERROR - Erro ao recuperar dados de treinamento: column "security" does not exist
+LINE 2:                     SELECT framework, security, scalability,...
+                                              ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
