@@ -92,3 +92,42 @@ def create_heatmap(comparison_data):
     )
     
     return fig
+
+def create_parallel_coordinates(comparison_data):
+    criteria = ['Security', 'Scalability', 'Energy_Efficiency', 'Governance', 'Interoperability', 'Operational_Complexity', 'Implementation_Cost', 'Latency']
+    
+    fig = px.parallel_coordinates(
+        comparison_data,
+        color="name",
+        dimensions=criteria,
+        title="Parallel Coordinates Plot for DLT Framework Comparison"
+    )
+    
+    fig.update_layout(
+        coloraxis_colorbar=dict(title="DLT Frameworks")
+    )
+    
+    return fig
+
+def create_grouped_bar_chart(comparison_data):
+    criteria = ['Security', 'Scalability', 'Energy_Efficiency', 'Governance', 'Interoperability', 'Operational_Complexity', 'Implementation_Cost', 'Latency']
+    
+    fig = go.Figure()
+    
+    for framework in comparison_data['name']:
+        values = comparison_data.loc[comparison_data['name'] == framework, criteria].values.flatten().tolist()
+        fig.add_trace(go.Bar(
+            x=criteria,
+            y=values,
+            name=framework
+        ))
+    
+    fig.update_layout(
+        barmode='group',
+        title="Grouped Bar Chart for DLT Framework Comparison",
+        xaxis_title="Criteria",
+        yaxis_title="Score",
+        legend_title="DLT Frameworks"
+    )
+    
+    return fig

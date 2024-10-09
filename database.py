@@ -46,6 +46,19 @@ class Database:
             logging.error(f"Error retrieving training data: {e}")
             return pd.DataFrame()
 
+    def get_user_by_username(self, username):
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute("SELECT id, username, password_hash FROM users WHERE username = %s", (username,))
+                user = cur.fetchone()
+                if user:
+                    return {'id': user[0], 'username': user[1], 'password_hash': user[2]}
+                return None
+        except psycopg2.Error as e:
+            st.error(f"Error retrieving user: {e}")
+            logging.error(f"Error retrieving user {username}: {e}")
+            return None
+
     def __del__(self):
         """Fecha a conexão com o banco de dados quando o objeto Database for destruído."""
         if hasattr(self, 'conn') and self.conn:

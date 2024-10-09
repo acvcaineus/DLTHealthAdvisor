@@ -7,7 +7,7 @@ from database import Database
 from auth import create_user, authenticate_user
 from decision_tree import DecisionTreeRecommender
 from utils import get_user_responses, calculate_metrics, generate_explanation, export_to_csv
-from visualization import visualize_decision_tree, visualize_comparison, create_radar_chart, create_heatmap
+from visualization import visualize_decision_tree, visualize_comparison, create_radar_chart, create_heatmap, create_parallel_coordinates, create_grouped_bar_chart
 from api import app as api_app
 import threading
 
@@ -53,6 +53,12 @@ def dlt_questionnaire_page(db, recommender):
         st.subheader("Framework Heatmap Comparison")
         st.plotly_chart(create_heatmap(training_data))
         
+        st.subheader("Parallel Coordinates Comparison")
+        st.plotly_chart(create_parallel_coordinates(training_data))
+        
+        st.subheader("Grouped Bar Chart Comparison")
+        st.plotly_chart(create_grouped_bar_chart(training_data))
+        
         sensitivity_results = recommender.sensitivity_analysis(user_responses)
         st.subheader("Sensitivity Analysis")
         for feature, sensitivity in sensitivity_results.items():
@@ -68,6 +74,8 @@ def dlt_questionnaire_page(db, recommender):
             )
 
 def main():
+    st.set_page_config(page_title="DLT Framework Recommender", layout="wide")
+    
     db = Database()
     recommender = DecisionTreeRecommender()
 
@@ -79,36 +87,43 @@ def main():
         st.session_state['logged_in'] = False
 
     if not st.session_state['logged_in']:
-        st.sidebar.title("Login / Registro")
-        action = st.sidebar.radio("Escolha uma ação", ["Login", "Registro"])
+        st.title("Welcome to DLT Framework Recommender")
+        st.write("Please login or register to continue.")
 
-        if action == "Login":
-            username = st.sidebar.text_input("Nome de usuário")
-            password = st.sidebar.text_input("Senha", type="password")
-            if st.sidebar.button("Login"):
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("Login")
+            username = st.text_input("Username", key="login_username")
+            password = st.text_input("Password", type="password", key="login_password")
+            if st.button("Login"):
                 user = authenticate_user(username, password)
                 if user:
                     st.session_state['logged_in'] = True
                     st.session_state['user_id'] = user.id
                     st.session_state['username'] = user.username
+                    st.success("Login successful!")
                     st.rerun()
                 else:
-                    st.sidebar.error("Credenciais inválidas")
-        else:
-            new_username = st.sidebar.text_input("Novo nome de usuário")
-            new_password = st.sidebar.text_input("Nova senha", type="password")
-            if st.sidebar.button("Registrar"):
+                    st.error("Invalid credentials")
+
+        with col2:
+            st.subheader("Register")
+            new_username = st.text_input("New Username", key="register_username")
+            new_password = st.text_input("New Password", type="password", key="register_password")
+            if st.button("Register"):
                 user_id = create_user(new_username, new_password)
                 if user_id:
                     st.session_state['logged_in'] = True
                     st.session_state['user_id'] = user_id
                     st.session_state['username'] = new_username
+                    st.success("Registration successful! You are now logged in.")
                     st.rerun()
                 else:
-                    st.sidebar.error("Falha no registro")
+                    st.error("Registration failed")
     else:
-        st.sidebar.success(f"Bem-vindo, {st.session_state['username']}")
-        if st.sidebar.button("Sair"):
+        st.sidebar.success(f"Welcome, {st.session_state['username']}")
+        if st.sidebar.button("Logout"):
             st.session_state['logged_in'] = False
             st.rerun()
 
