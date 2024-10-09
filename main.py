@@ -100,8 +100,12 @@ def calcular_metricas(db, framework, respostas_usuario):
         
         framework_id = result[0]
         
-        cur.execute("INSERT INTO pontuacaoframeworks (id_framework, id_usuario, pontuacao) VALUES (%s, %s, %s)", 
-                    (framework_id, st.session_state['user_id'], pontuacao))
+        cur.execute('''
+            INSERT INTO pontuacaoframeworks (id_framework, id_usuario, pontuacao)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (id_framework, id_usuario)
+            DO UPDATE SET pontuacao = EXCLUDED.pontuacao
+        ''', (framework_id, st.session_state['user_id'], pontuacao))
         db.conn.commit()
 
 def get_algorithm_group(dlt_framework):
