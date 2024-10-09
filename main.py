@@ -1,6 +1,10 @@
 import streamlit as st
 from database import Database
 import hashlib
+from auth import authenticate_user
+from decision_tree import DecisionTreeRecommender
+from visualization import create_radar_chart, create_heatmap, create_parallel_coordinates, create_grouped_bar_chart
+import pandas as pd
 
 # Função para gerar o hash da senha
 def hash_password(password):
@@ -33,21 +37,37 @@ def login_page(db):
 
     if st.button("Entrar"):
         if username and password:
-            hashed_password = hash_password(password)
-            user_id = db.authenticate_user(username, hashed_password)
-            if user_id:
-                st.success(f"Login bem-sucedido! Bem-vindo, {username}.")
+            user = authenticate_user(username, password)
+            if user:
+                st.success(f"Login bem-sucedido! Bem-vindo, {user.username}.")
                 st.session_state['logged_in'] = True
-                st.session_state['username'] = username
-                st.session_state['user_id'] = user_id
+                st.session_state['username'] = user.username
+                st.session_state['user_id'] = user.id
             else:
                 st.error("Nome de usuário ou senha incorretos.")
         else:
             st.warning("Por favor, preencha todos os campos.")
 
+# Função para exibir as visualizações
+def display_visualizations(comparison_data):
+    st.subheader("Visualizações Avançadas")
+    
+    # Radar Chart
+    st.plotly_chart(create_radar_chart(comparison_data))
+    
+    # Heatmap
+    st.plotly_chart(create_heatmap(comparison_data))
+    
+    # Parallel Coordinates
+    st.plotly_chart(create_parallel_coordinates(comparison_data))
+    
+    # Grouped Bar Chart
+    st.plotly_chart(create_grouped_bar_chart(comparison_data))
+
 # Função principal
 def main():
     db = Database()
+    recommender = DecisionTreeRecommender()
 
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
@@ -60,8 +80,25 @@ def main():
             st.experimental_set_query_params(logged_in="False")
             st.rerun()
 
-        st.write("Você está logado!")
-        # Aqui você pode adicionar mais funcionalidades para usuários logados
+        st.title("DLT Framework Recommender")
+
+        # Aqui você pode adicionar a lógica para coletar as respostas do usuário
+        # e gerar recomendações usando o DecisionTreeRecommender
+
+        # Para fins de demonstração, vamos criar alguns dados de comparação fictícios
+        comparison_data = pd.DataFrame({
+            'name': ['Ancile', 'BlockHR', 'RBEF', 'ChainSure', 'PCH'],
+            'Security': [9.5, 8.0, 7.5, 8.5, 7.5],
+            'Scalability': [7.0, 6.5, 8.5, 9.0, 7.5],
+            'Energy_Efficiency': [6.5, 7.5, 8.5, 8.5, 6.0],
+            'Governance': [9.0, 7.0, 7.5, 8.5, 7.0],
+            'Interoperability': [8.5, 7.5, 8.0, 7.5, 6.5],
+            'Operational_Complexity': [7.0, 6.5, 7.0, 7.5, 6.0],
+            'Implementation_Cost': [7.5, 6.5, 7.5, 7.0, 6.0],
+            'Latency': [6.5, 7.0, 7.5, 8.0, 5.5]
+        })
+
+        display_visualizations(comparison_data)
 
     else:
         menu = ["Login", "Registrar-se"]
