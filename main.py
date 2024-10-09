@@ -1,316 +1,115 @@
 import streamlit as st
 import psycopg2
-import hashlib
-from database import Database
-from sklearn import tree
-import numpy as np
-import pandas as pd
-from decision_tree import DecisionTreeRecommender
 import logging
-from visualization import visualize_decision_tree
-from utils import calculate_metrics
+import plotly.graph_objects as go
+import time
+import os
+from database import Database
+from decision_tree import DecisionTreeRecommender
 
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+# Configuração de logging
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s', filename='app_errors.log')
 
-def authenticate_user(db, username, password):
-    hashed_password = hash_password(password)
-    try:
-        with db.conn.cursor() as cur:
-            cur.execute("SELECT id FROM users WHERE username = %s AND password_hash = %s", (username, hashed_password))
-            user = cur.fetchone()
-            return user is not None, user
-    except psycopg2.Error as e:
-        st.error(f"Erro ao verificar o login: {e}")
-        return False, None
+def desenhar_pilha_shermin(camada_atual):
+    camadas = ["Camada de Aplicação", "Camada de Consenso", "Camada de Infraestrutura", "Camada de Internet"]
 
-def register_user(db, username, password):
-    hashed_password = hash_password(password)
-    return db.create_user(username, hashed_password)
+    # Definir cores para destacar a camada atual
+    cores = ['#D3D3D3' if camada != camada_atual else '#FFA500' for camada in camadas]
 
-def login_page(db):
-    st.title("Login")
-    login_username = st.text_input("Nome de Usuário")
-    login_password = st.text_input("Senha", type="password")
+    fig = go.Figure(go.Bar(
+        x=[1] * len(camadas),
+        y=camadas,
+        orientation='h',
+        marker=dict(color=cores)
+    ))
 
-    if st.button("Entrar"):
-        authenticated, user = authenticate_user(db, login_username, login_password)
-        if authenticated:
-            st.session_state['logged_in'] = True
-            st.session_state['username'] = login_username
-            st.session_state['user_id'] = user[0]
-            st.experimental_set_query_params(logged_in="True")
-            st.rerun()
-        else:
-            st.error("Nome de usuário ou senha incorretos.")
+    fig.update_layout(
+        title="Pilha Shermin - Camada Atual",
+        xaxis_title="",
+        yaxis_title="",
+        showlegend=False,
+        xaxis=dict(showticklabels=False),
+        yaxis=dict(tickfont=dict(size=14))
+    )
 
-    st.write("---")
-    st.write("Ou registre um novo usuário abaixo:")
+    return fig
 
-    register_username = st.text_input("Novo Nome de Usuário")
-    register_password = st.text_input("Nova Senha", type="password")
-    if st.button("Registrar Novo Usuário"):
-        if register_username and register_password:
-            if register_user(db, register_username, register_password):
-                st.success(f"Usuário {register_username} registrado com sucesso! Por favor, faça login.")
-            else:
-                st.error(f"Falha ao registrar o usuário {register_username}.")
-        else:
-            st.warning("Por favor, preencha todos os campos.")
-
-def dlt_recomendation_rules(respostas_usuario):
-    if not respostas_usuario:
-        return None
-    if len(respostas_usuario) < 4:
-        return None
-    if respostas_usuario[0] == 1 and respostas_usuario[1] == 1:
-        return "Hyperledger"
-    elif respostas_usuario[2] == 1 and respostas_usuario[3] == 1:
-        return "IOTA"
-    elif respostas_usuario[0] == 0 and respostas_usuario[3] == 1:
-        return "Ethereum"
-    else:
-        return "Corda"
-
-def treinar_modelo(db):
-    X = np.array([[1, 1, 1, 0], [0, 1, 0, 1], [1, 0, 1, 1], [0, 0, 0, 0]])
-    y = np.array(['Hyperledger', 'Ethereum', 'IOTA', 'Corda'])
-
-    clf = tree.DecisionTreeClassifier()
-    clf = clf.fit(X, y)
-    return clf
-
-def dlt_hybrid_recommendation(db, respostas_usuario):
-    dlt_inicial = dlt_recomendation_rules(respostas_usuario)
-    clf = treinar_modelo(db)
-    dlt_final = clf.predict([respostas_usuario])[0]
-    return dlt_inicial, dlt_final
-
-def calcular_metricas(db, framework, respostas_usuario):
-    gini = 1 - sum((respostas_usuario.count(val) / len(respostas_usuario)) ** 2 for val in set(respostas_usuario))
-    pontuacao = gini * len(respostas_usuario)
-
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT id FROM dlt_frameworks WHERE name = %s", (framework,))
-        result = cur.fetchone()
-        
-        if result is None:
-            st.error(f"Framework '{framework}' não encontrado.")
-            return
-        
-        framework_id = result[0]
-        
-        cur.execute('''
-            INSERT INTO pontuacaoframeworks (id_framework, id_usuario, pontuacao)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (id_framework, id_usuario)
-            DO UPDATE SET pontuacao = EXCLUDED.pontuacao
-        ''', (framework_id, st.session_state['user_id'], pontuacao))
-        db.conn.commit()
-
-def get_algorithm_group(dlt_framework):
-    return "High Security and Resilience"
-
-def get_consensus_algorithms(group):
-    return ["PBFT", "RAFT"]
-
-def get_algorithm_comparison(algorithms):
-    return pd.DataFrame({
-        'Algorithm': algorithms,
-        'Security': [9, 8],
-        'Scalability': [7, 8],
-        'Energy Efficiency': [6, 7]
-    })
-
-def generate_recommendation_justification(dlt_framework, user_responses):
-    return f"The {dlt_framework} is recommended based on your responses, particularly due to its high security and scalability features."
+def explicar_camada(camada_atual):
+    explicacao = {
+        "Camada de Aplicação": "A Camada de Aplicação está relacionada com a interface direta com o usuário final e como o sistema interage com outras aplicações. Aqui, priorizamos questões como privacidade e integração com sistemas legados.",
+        "Camada de Consenso": "A Camada de Consenso lida com o processo de alcançar um acordo distribuído em redes descentralizadas. Algoritmos como PBFT e RAFT são priorizados nesta camada para garantir a segurança e escalabilidade.",
+        "Camada de Infraestrutura": "A Camada de Infraestrutura trata dos aspectos de escalabilidade, eficiência energética e latência da rede. Nesta camada, priorizamos redes como IOTA e Hyperledger Fabric para lidar com grandes volumes de dados e alta demanda de eficiência.",
+        "Camada de Internet": "A Camada de Internet lida com a conectividade global e como as redes distribuídas interagem através da Internet. A conectividade global e a distribuição de redes são fatores críticos aqui."
+    }
+    return explicacao.get(camada_atual, "Sem explicação disponível.")
 
 def dlt_questionnaire_page(db):
     st.title("Recomendação de DLT para Saúde")
 
     with db.conn.cursor() as cur:
-        cur.execute("SELECT id, descricao FROM perguntasframework")
-        perguntas = cur.fetchall()
+        # Recupera a primeira pergunta
+        cur.execute("SELECT id, descricao, camada_shermin, caracteristica_algoritmo, ramificacao_sim, ramificacao_nao FROM perguntasframework WHERE id = 1")
+        pergunta = cur.fetchone()
 
     respostas_usuario = {}
+    proxima_pergunta_id = pergunta[0]
 
-    for pergunta in perguntas:
-        id_pergunta, descricao = pergunta
-        resposta = st.radio(descricao, ["Sim", "Não"], key=f"pergunta_{id_pergunta}")
-        respostas_usuario[id_pergunta] = 1 if resposta == "Sim" else 0
-
-    if st.button("Obter Recomendação"):
-        if not respostas_usuario:
-            st.error("Por favor, responda pelo menos uma pergunta antes de enviar.")
-        else:
-            st.write("Selecione a abordagem para gerar a recomendação:")
-            abordagem = st.selectbox("Escolha a abordagem", ["Baseada em Regras", "Híbrida (Regras + Machine Learning)"])
-
-            if abordagem == "Baseada em Regras":
-                dlt_recomendada = dlt_recomendation_rules(list(respostas_usuario.values()))
-                if dlt_recomendada:
-                    st.write(f"**DLT Recomendada (Regras):** {dlt_recomendada}")
-                else:
-                    st.error("Respostas insuficientes para gerar recomendação.")
-            elif abordagem == "Híbrida (Regras + Machine Learning)":
-                try:
-                    recommender = DecisionTreeRecommender()
-                    dlt_recomendada = recommender.get_recommendations(respostas_usuario)[0]
-                    
-                    st.write(f"**DLT Recomendada:** {dlt_recomendada}")
-
-                    grupo_algoritmos = get_algorithm_group(dlt_recomendada)
-                    st.write(f"**Grupo dos Algoritmos:** {grupo_algoritmos}")
-
-                    algoritmos_consenso = get_consensus_algorithms(grupo_algoritmos)
-                    st.write("**Algoritmos de Consenso:**")
-                    for algo in algoritmos_consenso:
-                        st.write(f"- {algo}")
-
-                    st.write("**Comparação entre Algoritmos:**")
-                    comparison_table = get_algorithm_comparison(algoritmos_consenso)
-                    st.table(comparison_table)
-
-                    st.write("**Árvore de Decisão:**")
-                    decision_tree_fig = visualize_decision_tree(recommender.decision_tree)
-                    st.plotly_chart(decision_tree_fig)
-
-                    st.write("**Métricas de Cálculo:**")
-                    metrics = calculate_metrics(recommender, respostas_usuario)
-                    for metric, value in metrics.items():
-                        st.write(f"{metric}: {value}")
-
-                    st.write("**Justificativa da Recomendação:**")
-                    justification = generate_recommendation_justification(dlt_recomendada, respostas_usuario)
-                    st.write(justification)
-
-                    st.write("**Análise de Sensibilidade:**")
-                    sensitivity_results = recommender.sensitivity_analysis(respostas_usuario)
-                    for feature, sensitivity in sensitivity_results.items():
-                        st.write(f"{feature}: {sensitivity:.4f}")
-                    st.write("A análise de sensibilidade mostra a probabilidade de mudança na recomendação ao variar cada característica.")
-
-                except Exception as e:
-                    st.error(f"Erro ao processar a abordagem híbrida: {e}")
-                    logging.error(f"Erro ao processar a abordagem híbrida: {e}")
-
-            calcular_metricas(db, dlt_recomendada, list(respostas_usuario.values()))
-
-            with db.conn.cursor() as cur:
-                for id_pergunta, resposta in respostas_usuario.items():
-                    cur.execute("INSERT INTO respostasusuarios (id_pergunta, resposta, id_usuario) VALUES (%s, %s, %s)", 
-                                (id_pergunta, resposta, st.session_state['user_id']))
-                db.conn.commit()
-
-def add_consensus_algorithms_page(db):
-    st.title("Algoritmos de Consenso")
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT * FROM dlt_consensus_algorithms")
-        algorithms = cur.fetchall()
-    
-    for algo in algorithms:
-        st.subheader(algo[1])
-        st.write(f"Grupo de Consenso: {algo[2]}")
-        st.write(f"Descrição: {algo[3]}")
-        st.write(f"Característica Prioritária: {algo[4]}")
-        st.write(f"Casos de Uso: {', '.join(algo[5])}")
-        st.write(f"Principais Características: {algo[6]}")
-        st.write("---")
-
-def add_framework_use_cases_page(db):
-    st.title("Casos de Uso de Frameworks")
-    with db.conn.cursor() as cur:
-        cur.execute("""
-            SELECT f.name, u.use_case, fu.relevant_criteria 
-            FROM dlt_framework_use_cases fu
-            JOIN dlt_frameworks f ON fu.framework_id = f.id
-            JOIN dlt_use_cases u ON fu.use_case_id = u.id
-        """)
-        use_cases = cur.fetchall()
-    
-    for case in use_cases:
-        st.subheader(f"{case[0]} - {case[1]}")
-        st.write(f"Critérios Relevantes: {case[2]}")
-        st.write("---")
-
-def add_dlt_frameworks_page(db):
-    st.title("Frameworks DLT")
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT * FROM dlt_frameworks")
-        frameworks = cur.fetchall()
-    
-    for fw in frameworks:
-        st.subheader(fw[1])
-        st.write(f"Segurança: {fw[2]}")
-        st.write(f"Escalabilidade: {fw[3]}")
-        st.write(f"Eficiência Energética: {fw[4]}")
-        st.write(f"Governança: {fw[5]}")
-        st.write(f"Interoperabilidade: {fw[6]}")
-        st.write(f"Complexidade Operacional: {fw[7]}")
-        st.write(f"Custo de Implementação: {fw[8]}")
-        st.write(f"Latência: {fw[9]}")
-        st.write(f"Algoritmos de Exemplo: {fw[18]}")
-        st.write("---")
-
-def add_training_data_page(db):
-    st.title("Dados de Treinamento")
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT * FROM dlt_training_data")
-        data = cur.fetchall()
-    
-    df = pd.DataFrame(data, columns=['id', 'framework', 'Security', 'Scalability', 'Energy_efficiency', 'Governance', 'Operational_Complexity', 'Latency', 'Integration', 'Interoperability', 'Implementation_Cost', 'Privacy', 'Data_Volume'])
-    st.dataframe(df)
-
-def add_dlt_use_cases_page(db):
-    st.title("Casos de Uso DLT")
-    with db.conn.cursor() as cur:
-        cur.execute("SELECT * FROM dlt_use_cases")
-        use_cases = cur.fetchall()
-    
-    if not use_cases:
-        st.write("Não há casos de uso DLT disponíveis no momento.")
-    else:
-        for case in use_cases:
-            st.subheader(case[1] if len(case) > 1 else "Caso de Uso Sem Título")
-            st.write(f"Descrição: {case[2] if len(case) > 2 else 'Não disponível'}")
-            st.write(f"Benefícios: {case[3] if len(case) > 3 else 'Não disponível'}")
-            st.write(f"Desafios: {case[4] if len(case) > 4 else 'Não disponível'}")
-            st.write("---")
-
-def add_user_comparisons_page(db):
-    st.title("Comparações de Usuários")
-    with db.conn.cursor() as cur:
-        cur.execute("""
-            SELECT u.username, f1.name as framework1, f2.name as framework2, c.metrica1, c.metrica2, c.descricao_comparacao
-            FROM comparacaoframeworks c
-            JOIN users u ON c.id_usuario = u.id
-            JOIN dlt_frameworks f1 ON c.id_framework_1 = f1.id
-            JOIN dlt_frameworks f2 ON c.id_framework_2 = f2.id
-        """)
-        comparisons = cur.fetchall()
-    
-    for comp in comparisons:
-        st.subheader(f"Comparação por {comp[0]}")
-        st.write(f"Framework 1: {comp[1]}")
-        st.write(f"Framework 2: {comp[2]}")
-        st.write(f"Métrica 1: {comp[3]}")
-        st.write(f"Métrica 2: {comp[4]}")
-        st.write(f"Descrição da Comparação: {comp[5]}")
-        st.write("---")
-
-def add_user_admin_page(db):
-    st.title("Administração de Usuários")
-    if st.session_state.get('is_admin', False):
+    while proxima_pergunta_id:
         with db.conn.cursor() as cur:
-            cur.execute("SELECT id, username FROM users")
-            users = cur.fetchall()
-        
-        for user in users:
-            st.write(f"ID: {user[0]}, Username: {user[1]}")
-            if st.button(f"Delete {user[1]}"):
-                pass
-    else:
-        st.write("Você não tem permissão para acessar esta página.")
+            cur.execute("SELECT id, descricao, camada_shermin, caracteristica_algoritmo, ramificacao_sim, ramificacao_nao FROM perguntasframework WHERE id = %s", (proxima_pergunta_id,))
+            pergunta_atual = cur.fetchone()
+
+        camada_atual = pergunta_atual[2]
+        caracteristica_atual = pergunta_atual[3]
+
+        # Desenhar a pilha Shermin com a camada atual destacada
+        st.plotly_chart(desenhar_pilha_shermin(camada_atual))
+
+        st.subheader(f"Camada Atual: {camada_atual}")
+        st.write(f"**Característica Priorizada**: {caracteristica_atual}")
+        st.write(f"**Explicação da Camada**: {explicar_camada(camada_atual)}")
+
+        resposta = st.radio(pergunta_atual[1], ["Sim", "Não"], key=f"pergunta_{pergunta_atual[0]}")
+        respostas_usuario[pergunta_atual[0]] = 1 if resposta == "Sim" else 0
+
+        # Animação suave antes de pular para a próxima camada
+        time.sleep(0.5)
+
+        if resposta == "Sim":
+            proxima_pergunta_id = pergunta_atual[4]  # Ramificação SIM
+        else:
+            proxima_pergunta_id = pergunta_atual[5]  # Ramificação NÃO
+
+        if not proxima_pergunta_id:
+            break
+
+    if st.button("Enviar"):
+        st.write("Respostas:", respostas_usuario)
+        calcular_metricas(db, respostas_usuario)
+    
+    # Move sensitivity analysis outside the button click event
+    perform_sensitivity_analysis(respostas_usuario)
+
+def calcular_metricas(db, respostas_usuario):
+    pontuacao_total = sum(respostas_usuario.values())
+    st.write(f"Pontuação calculada: {pontuacao_total}")
+
+    with db.conn.cursor() as cur:
+        cur.execute("INSERT INTO pontuacaoframeworks (id_usuario, pontuacao) VALUES (%s, %s)", 
+                    (st.session_state['user_id'], pontuacao_total))
+        db.conn.commit()
+
+def perform_sensitivity_analysis(user_responses):
+    st.subheader("Análise de Sensibilidade")
+    recommender = DecisionTreeRecommender()
+    sensitivity_results = recommender.sensitivity_analysis(user_responses)
+    
+    st.write("A análise de sensibilidade mostra como pequenas mudanças nas respostas podem afetar a recomendação final:")
+    
+    for feature, sensitivity in sensitivity_results.items():
+        st.write(f"{feature}: {sensitivity:.2f}")
+    
+    st.write("Valores mais altos indicam que a característica tem um impacto maior na recomendação final.")
 
 def main():
     db = Database()
@@ -326,31 +125,9 @@ def main():
             st.experimental_set_query_params(logged_in="False")
             st.rerun()
 
-        menu = ["Recomendação de DLT", "Algoritmos de Consenso", "Casos de Uso de Frameworks", 
-                "Frameworks DLT", "Dados de Treinamento", "Casos de Uso DLT", 
-                "Comparações de Usuários", "Administração de Usuários"]
-
-        choice = st.sidebar.selectbox("Menu", menu)
-
-        if choice == "Recomendação de DLT":
-            dlt_questionnaire_page(db)
-        elif choice == "Algoritmos de Consenso":
-            add_consensus_algorithms_page(db)
-        elif choice == "Casos de Uso de Frameworks":
-            add_framework_use_cases_page(db)
-        elif choice == "Frameworks DLT":
-            add_dlt_frameworks_page(db)
-        elif choice == "Dados de Treinamento":
-            add_training_data_page(db)
-        elif choice == "Casos de Uso DLT":
-            add_dlt_use_cases_page(db)
-        elif choice == "Comparações de Usuários":
-            add_user_comparisons_page(db)
-        elif choice == "Administração de Usuários":
-            add_user_admin_page(db)
-
+        dlt_questionnaire_page(db)
     else:
-        login_page(db)
+        st.error("Por favor, faça login primeiro.")
 
 if __name__ == '__main__':
     main()
