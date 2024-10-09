@@ -335,3 +335,8 @@ LINE 2: ...urity" as security, "Scalability" as scalability, "Energy Ef...
                                                              ^
 HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
 
+2024-10-09 03:00:08,393 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT framework, Security, Scalability,...
+                                              ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+

@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %
 class Database:
     def __init__(self):
         try:
-            # Conectando ao banco de dados PostgreSQL com variáveis de ambiente
+            # Conectando ao banco de dados PostgreSQL
             self.conn = psycopg2.connect(
                 dbname=os.getenv('PGDATABASE'),
                 user=os.getenv('PGUSER'),
@@ -19,7 +19,7 @@ class Database:
                 port=os.getenv('PGPORT')
             )
             self.create_tables()  # Cria as tabelas necessárias caso ainda não existam
-            self.inserir_perguntas()  # Insere as perguntas no banco de dados caso não estejam inseridas
+            self.inserir_perguntas()  # Insere as perguntas no banco de dados caso ainda não estejam inseridas
         except psycopg2.DatabaseError as e:
             st.error(f"Erro ao conectar ao banco de dados: {e}")
             logging.error(f"Erro ao conectar ao banco de dados: {e}")
@@ -29,7 +29,7 @@ class Database:
         """Cria as tabelas necessárias no banco de dados se ainda não existirem."""
         try:
             with self.conn.cursor() as cur:
-                # Criação da tabela de usuários com índice único
+                # Criação da tabela de usuários
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS users (
                         id SERIAL PRIMARY KEY,
@@ -38,8 +38,6 @@ class Database:
                         CONSTRAINT unique_username UNIQUE (username)
                     );
                 """)
-                # Índice para melhorar buscas por nome de usuário
-                cur.execute("CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);")
 
                 # Criação da tabela de perguntas do framework
                 cur.execute("""
@@ -54,58 +52,17 @@ class Database:
                     );
                 """)
 
-                # Criação da tabela de respostas dos usuários com índice
+                # Criação da tabela de respostas dos usuários
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS respostasusuarios (
                         id SERIAL PRIMARY KEY,
                         id_pergunta INTEGER NOT NULL REFERENCES perguntasframework(id),
                         resposta VARCHAR(3) NOT NULL,  -- Sim ou Não
-                        id_usuario INTEGER NOT NULL REFERENCES users(id),
-                        CONSTRAINT unique_resposta_pergunta UNIQUE (id_pergunta, id_usuario)
-                    );
-                """)
-                # Índice para melhorar performance de buscas por usuário e pergunta
-                cur.execute("CREATE INDEX IF NOT EXISTS idx_respostasusuarios_usuario ON respostasusuarios(id_usuario);")
-
-                # Criação da tabela de frameworks de DLT
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS dlt_frameworks (
-                        id SERIAL PRIMARY KEY,
-                        name VARCHAR(50) NOT NULL UNIQUE,
-                        security DOUBLE PRECISION,
-                        scalability DOUBLE PRECISION,
-                        energy_efficiency DOUBLE PRECISION,
-                        governance DOUBLE PRECISION,
-                        interoperability DOUBLE PRECISION,
-                        operational_complexity DOUBLE PRECISION,
-                        implementation_cost DOUBLE PRECISION,
-                        latency DOUBLE PRECISION,
-                        security_score NUMERIC,
-                        scalability_score NUMERIC,
-                        energy_efficiency_score NUMERIC,
-                        governance_score NUMERIC,
-                        interoperability_score NUMERIC,
-                        operational_complexity_score NUMERIC,
-                        implementation_cost_score NUMERIC,
-                        latency_score NUMERIC,
-                        example_algorithms VARCHAR(255)
+                        id_usuario INTEGER NOT NULL REFERENCES users(id)
                     );
                 """)
 
-                # Criação da tabela de algoritmos de consenso
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS dlt_consensus_algorithms (
-                        id SERIAL PRIMARY KEY,
-                        algorithm_name VARCHAR(50) NOT NULL UNIQUE,
-                        consensus_group VARCHAR(100),
-                        description TEXT,
-                        caracteristica_prioritaria TEXT,
-                        casos_de_uso TEXT[],
-                        principais_caracteristicas TEXT
-                    );
-                """)
-
-                # Criação da tabela de pontuação dos frameworks com constraint de unicidade
+                # Criação da tabela de pontuação dos frameworks
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS pontuacaoframeworks (
                         id SERIAL PRIMARY KEY,
@@ -116,43 +73,9 @@ class Database:
                         CONSTRAINT unique_pontuacao_usuario_framework UNIQUE (id_framework, id_usuario)
                     );
                 """)
-                # Índice para buscas rápidas por frameworks e usuários
-                cur.execute("CREATE INDEX IF NOT EXISTS idx_pontuacaoframeworks_usuario ON pontuacaoframeworks(id_usuario);")
 
-                # Criação da tabela de métricas de árvore de decisão
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS metricasdecisiontree (
-                        id SERIAL PRIMARY KEY,
-                        id_framework INTEGER REFERENCES dlt_frameworks(id),
-                        id_algoritmo INTEGER REFERENCES dlt_consensus_algorithms(id),
-                        valor_metrica NUMERIC,
-                        metrica TEXT
-                    );
-                """)
-
-                # Criação da tabela para dados de treinamento
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS dlt_training_data (
-                        id SERIAL PRIMARY KEY,
-                        framework VARCHAR(50),
-                        Security DOUBLE PRECISION,
-                        Scalability DOUBLE PRECISION,
-                        Energy_efficiency BOOLEAN,
-                        Governance DOUBLE PRECISION,
-                        Operational_Complexity DOUBLE PRECISION,
-                        Latency DOUBLE PRECISION,
-                        Integration BOOLEAN,
-                        Interoperability DOUBLE PRECISION,
-                        Implementation_Cost DOUBLE PRECISION,
-                        Privacy BOOLEAN,
-                        Data_Volume BOOLEAN
-                    );
-                """)
-
-                # Adicionar índice para melhorar buscas por frameworks
-                cur.execute("CREATE INDEX IF NOT EXISTS idx_dlt_training_data_framework ON dlt_training_data(framework);")
-
-                self.conn.commit()  # Confirma as alterações
+                # Confirma as mudanças
+                self.conn.commit()
         except psycopg2.Error as e:
             st.error(f"Erro ao criar tabelas: {e}")
             logging.error(f"Erro ao criar tabelas: {e}")
@@ -190,6 +113,31 @@ class Database:
             logging.error(f"Erro ao inserir perguntas no banco de dados: {e}")
             self.conn.rollback()
 
+    def create_user(self, username, password_hash):
+        """Insere um novo usuário no banco de dados."""
+        try:
+            with self.conn.cursor() as cur:
+                # Verifica se o usuário já existe
+                cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+                if cur.fetchone():
+                    st.warning(f"O usuário {username} já existe.")
+                    return None
+
+                # Insere o novo usuário
+                cur.execute(
+                    "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id",
+                    (username, password_hash)
+                )
+                user_id = cur.fetchone()[0]
+                self.conn.commit()
+                logging.info(f"Usuário criado com sucesso: {username}")
+                return user_id
+        except psycopg2.Error as e:
+            st.error(f"Erro ao criar usuário no banco de dados: {e}")
+            logging.error(f"Erro ao criar usuário {username}: {e}")
+            self.conn.rollback()
+            return None
+
     def get_user_by_username(self, username):
         try:
             with self.conn.cursor() as cur:
@@ -202,6 +150,25 @@ class Database:
             st.error(f"Error retrieving user: {e}")
             logging.error(f"Error retrieving user {username}: {e}")
             return None
+
+    def get_training_data(self):
+        """Recupera os dados de treinamento do banco de dados."""
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute("""
+                    SELECT framework, Security, Scalability, Energy_efficiency, Governance,
+                           Interoperability, Operational_Complexity, Implementation_Cost, Latency
+                    FROM dlt_training_data
+                """)
+                data = cur.fetchall()
+                columns = ['framework', 'security', 'scalability', 'energy_efficiency', 'governance',
+                           'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
+                df = pd.DataFrame(data, columns=columns)
+                return df
+        except psycopg2.Error as e:
+            st.error(f"Error retrieving training data: {e}")
+            logging.error(f"Error retrieving training data: {e}")
+            return pd.DataFrame()
 
     def __del__(self):
         """Fecha a conexão com o banco de dados quando o objeto Database for destruído."""

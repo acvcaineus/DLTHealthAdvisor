@@ -14,7 +14,7 @@ class User(UserMixin):
     @staticmethod
     def get(user_id):
         db = Database()
-        user = db.get_user(user_id)
+        user = db.get_user_by_username(user_id)
         if user:
             return User(id=user['id'], username=user['username'], password_hash=user['password_hash'])
         return None
