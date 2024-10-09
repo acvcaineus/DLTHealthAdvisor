@@ -11,6 +11,7 @@ class DecisionTreeRecommender:
         self.features = ['security', 'scalability', 'energy_efficiency', 'governance',
                          'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
         self.target = 'framework'
+        self.scaler = StandardScaler()
         self.train_model()
 
     def train_model(self):
@@ -18,19 +19,25 @@ class DecisionTreeRecommender:
         db = Database()
         training_data = db.get_training_data()
 
-        self.scaler = StandardScaler()
-        X = self.scaler.fit_transform(training_data[self.features])
+        if training_data.empty:
+            raise ValueError("No training data available")
+
+        available_features = [f for f in self.features if f in training_data.columns]
+        if not available_features:
+            raise ValueError(f"None of the expected features {self.features} are in the training data columns: {training_data.columns}")
+
+        X = self.scaler.fit_transform(training_data[available_features])
         y = self.label_encoder.fit_transform(training_data[self.target])
 
         # Feature selection
-        selector = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=42), max_features=4)
+        selector = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=42), max_features=min(4, len(available_features)))
         X_selected = selector.fit_transform(X, y)
-        self.selected_features = [feature for feature, selected in zip(self.features, selector.get_support()) if selected]
+        self.selected_features = [feature for feature, selected in zip(available_features, selector.get_support()) if selected]
 
         self.decision_tree.fit(X_selected, y)
 
     def get_recommendations(self, user_responses):
-        user_input = np.array([float(user_responses[feature]) for feature in self.selected_features]).reshape(1, -1)
+        user_input = np.array([float(user_responses.get(feature, 0)) for feature in self.selected_features]).reshape(1, -1)
         scaled_input = self.scaler.transform(user_input)
         prediction = self.decision_tree.predict(scaled_input)
         recommended_framework = self.label_encoder.inverse_transform(prediction)[0]
@@ -44,7 +51,7 @@ class DecisionTreeRecommender:
         return dict(zip(self.selected_features, self.decision_tree.feature_importances_))
 
     def sensitivity_analysis(self, user_responses, num_perturbations=10, perturbation_range=0.1):
-        original_input = np.array([float(user_responses[feature]) for feature in self.selected_features]).reshape(1, -1)
+        original_input = np.array([float(user_responses.get(feature, 0)) for feature in self.selected_features]).reshape(1, -1)
         scaled_original_input = self.scaler.transform(original_input)
         original_prediction = self.decision_tree.predict(scaled_original_input)[0]
         

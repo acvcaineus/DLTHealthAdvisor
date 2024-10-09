@@ -20,6 +20,11 @@ def run_api():
 def dlt_questionnaire_page(db, recommender):
     st.title("DLT Framework Recommender for Healthcare")
     
+    training_data = db.get_training_data()
+    if training_data.empty:
+        st.error("No training data available. Please contact the administrator.")
+        return
+
     user_responses = get_user_responses()
     
     if st.button("Get Recommendations"):
@@ -29,7 +34,7 @@ def dlt_questionnaire_page(db, recommender):
         st.subheader("Recommended DLT Frameworks")
         for i, framework in enumerate(recommendations, 1):
             st.write(f"{i}. {framework}")
-            st.write(generate_explanation(framework, db.get_training_data()))
+            st.write(generate_explanation(framework, training_data))
         
         st.subheader("Model Metrics")
         st.write(f"Information Gain: {metrics['information_gain']:.2f}")
@@ -40,14 +45,13 @@ def dlt_questionnaire_page(db, recommender):
         st.plotly_chart(visualize_decision_tree(recommender.decision_tree))
         
         st.subheader("Framework Comparison")
-        comparison_data = db.get_training_data()
-        st.plotly_chart(visualize_comparison(comparison_data))
+        st.plotly_chart(visualize_comparison(training_data))
         
         st.subheader("Multi-dimensional Comparison (Radar Chart)")
-        st.plotly_chart(create_radar_chart(comparison_data))
+        st.plotly_chart(create_radar_chart(training_data))
         
         st.subheader("Framework Heatmap Comparison")
-        st.plotly_chart(create_heatmap(comparison_data))
+        st.plotly_chart(create_heatmap(training_data))
         
         sensitivity_results = recommender.sensitivity_analysis(user_responses)
         st.subheader("Sensitivity Analysis")
@@ -55,7 +59,7 @@ def dlt_questionnaire_page(db, recommender):
             st.write(f"{feature}: {sensitivity:.2f}")
         
         if st.button("Export Results"):
-            csv = export_to_csv(recommendations, comparison_data, metrics)
+            csv = export_to_csv(recommendations, training_data, metrics)
             st.download_button(
                 label="Download CSV",
                 data=csv,
@@ -87,7 +91,7 @@ def main():
                     st.session_state['logged_in'] = True
                     st.session_state['user_id'] = user.id
                     st.session_state['username'] = user.username
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.sidebar.error("Credenciais inválidas")
         else:
@@ -99,14 +103,14 @@ def main():
                     st.session_state['logged_in'] = True
                     st.session_state['user_id'] = user_id
                     st.session_state['username'] = new_username
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.sidebar.error("Falha no registro")
     else:
         st.sidebar.success(f"Bem-vindo, {st.session_state['username']}")
         if st.sidebar.button("Sair"):
             st.session_state['logged_in'] = False
-            st.experimental_rerun()
+            st.rerun()
 
         dlt_questionnaire_page(db, recommender)
 

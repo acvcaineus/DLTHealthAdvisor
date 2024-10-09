@@ -385,3 +385,33 @@ LINE 2:                     SELECT framework, security, scalability,...
                                               ^
 HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
 
+2024-10-09 03:14:27,708 - ERROR - Erro ao recuperar dados de treinamento: column "security" does not exist
+LINE 2:                     SELECT framework, security, scalability,...
+                                              ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 03:14:47,157 - ERROR - Erro ao recuperar dados de treinamento: column "security" does not exist
+LINE 2:                     SELECT framework, security, scalability,...
+                                              ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 03:16:52,106 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT framework, security, scalability,...
+                                              ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 03:16:55,196 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT framework, security, scalability,...
+                                              ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 03:17:11,367 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT framework, security, scalability,...
+                                              ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 03:18:50,867 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://172.31.196.62:5001
+2024-10-09 03:18:50,867 - INFO - [33mPress CTRL+C to quit[0m
