@@ -29,6 +29,22 @@ class Database:
         """Cria as tabelas necessárias no banco de dados se ainda não existirem."""
         try:
             with self.conn.cursor() as cur:
+                # Criação da tabela de dados de treinamento com nomes de colunas consistentes
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS dlt_training_data (
+                        id SERIAL PRIMARY KEY,
+                        framework VARCHAR(50),
+                        security DOUBLE PRECISION,
+                        scalability DOUBLE PRECISION,
+                        energy_efficiency BOOLEAN,
+                        governance DOUBLE PRECISION,
+                        operational_complexity DOUBLE PRECISION,
+                        implementation_cost DOUBLE PRECISION,
+                        latency DOUBLE PRECISION,
+                        interoperability DOUBLE PRECISION
+                    );
+                """)
+
                 # Criação da tabela de usuários
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS users (
@@ -139,6 +155,7 @@ class Database:
             return None
 
     def get_user_by_username(self, username):
+        """Recupera um usuário pelo nome de usuário."""
         try:
             with self.conn.cursor() as cur:
                 cur.execute("SELECT id, username, password_hash FROM users WHERE username = %s", (username,))
@@ -147,26 +164,27 @@ class Database:
                     return {'id': user[0], 'username': user[1], 'password_hash': user[2]}
                 return None
         except psycopg2.Error as e:
-            st.error(f"Error retrieving user: {e}")
-            logging.error(f"Error retrieving user {username}: {e}")
+            st.error(f"Erro ao recuperar usuário: {e}")
+            logging.error(f"Erro ao recuperar usuário {username}: {e}")
             return None
 
     def get_training_data(self):
+        """Recupera os dados de treinamento do banco de dados."""
         try:
             with self.conn.cursor() as cur:
-                cur.execute('''
-                    SELECT framework, Security, Scalability, Energy_Efficiency, Governance,
-                           Interoperability, Operational_Complexity, Implementation_Cost, Latency
+                cur.execute("""
+                    SELECT framework, security, scalability, energy_efficiency, governance,
+                           interoperability, operational_complexity, implementation_cost, latency
                     FROM dlt_training_data
-                ''')
+                """)
                 data = cur.fetchall()
-                columns = ['framework', 'Security', 'Scalability', 'Energy_Efficiency', 'Governance',
-                           'Interoperability', 'Operational_Complexity', 'Implementation_Cost', 'Latency']
+                columns = ['framework', 'security', 'scalability', 'energy_efficiency', 'governance',
+                           'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
                 df = pd.DataFrame(data, columns=columns)
                 return df
         except psycopg2.Error as e:
-            st.error(f"Error retrieving training data: {e}")
-            logging.error(f"Error retrieving training data: {e}")
+            st.error(f"Erro ao recuperar dados de treinamento.")
+            logging.error(f"Erro ao recuperar dados de treinamento: {e}")
             return pd.DataFrame()
 
     def __del__(self):

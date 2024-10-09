@@ -8,8 +8,8 @@ class DecisionTreeRecommender:
     def __init__(self):
         self.decision_tree = DecisionTreeClassifier(random_state=42)
         self.label_encoder = LabelEncoder()
-        self.features = ['Security', 'Scalability', 'Energy_Efficiency', 'Governance',
-                         'Interoperability', 'Operational_Complexity', 'Implementation_Cost', 'Latency']
+        self.features = ['security', 'scalability', 'energy_efficiency', 'governance',
+                         'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
         self.target = 'framework'
         self.train_model()
 
@@ -30,7 +30,7 @@ class DecisionTreeRecommender:
         self.decision_tree.fit(X_selected, y)
 
     def get_recommendations(self, user_responses):
-        user_input = np.array([user_responses[feature] for feature in self.selected_features]).reshape(1, -1)
+        user_input = np.array([float(user_responses[feature]) for feature in self.selected_features]).reshape(1, -1)
         scaled_input = self.scaler.transform(user_input)
         prediction = self.decision_tree.predict(scaled_input)
         recommended_framework = self.label_encoder.inverse_transform(prediction)[0]
@@ -44,7 +44,7 @@ class DecisionTreeRecommender:
         return dict(zip(self.selected_features, self.decision_tree.feature_importances_))
 
     def sensitivity_analysis(self, user_responses, num_perturbations=10, perturbation_range=0.1):
-        original_input = np.array([user_responses[feature] for feature in self.selected_features]).reshape(1, -1)
+        original_input = np.array([float(user_responses[feature]) for feature in self.selected_features]).reshape(1, -1)
         scaled_original_input = self.scaler.transform(original_input)
         original_prediction = self.decision_tree.predict(scaled_original_input)[0]
         

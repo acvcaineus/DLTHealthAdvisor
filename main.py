@@ -7,6 +7,7 @@ from database import Database
 from auth import create_user, authenticate_user
 from decision_tree import DecisionTreeRecommender
 from utils import get_user_responses, calculate_metrics, generate_explanation, export_to_csv
+from visualization import visualize_decision_tree, visualize_comparison
 
 # Configuração de logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s', filename='app_errors.log')
@@ -66,6 +67,17 @@ def dlt_questionnaire_page(db, recommender):
         st.write("Sensibilidade das características:")
         for feature, sensitivity in sensitivity_results.items():
             st.write(f"{feature}: {sensitivity:.4f}")
+
+        # Visualização da árvore de decisão
+        st.subheader("Visualização da Árvore de Decisão")
+        tree_fig = visualize_decision_tree(recommender.decision_tree)
+        st.plotly_chart(tree_fig)
+
+        # Visualização da comparação entre frameworks
+        st.subheader("Comparação entre Frameworks")
+        comparison_data = db.get_training_data()
+        comparison_fig = visualize_comparison(comparison_data)
+        st.plotly_chart(comparison_fig)
 
         if st.button("Exportar Resultados"):
             csv = export_to_csv(recommendations, db.get_training_data(), metrics)
