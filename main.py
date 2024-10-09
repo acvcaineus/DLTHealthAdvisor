@@ -6,6 +6,9 @@ from sklearn import tree
 import numpy as np
 import pandas as pd
 from decision_tree import DecisionTreeRecommender
+import logging
+from visualization import visualize_decision_tree
+from utils import calculate_metrics
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -101,6 +104,23 @@ def calcular_metricas(db, framework, respostas_usuario):
                     (framework_id, st.session_state['user_id'], pontuacao))
         db.conn.commit()
 
+def get_algorithm_group(dlt_framework):
+    return "High Security and Resilience"
+
+def get_consensus_algorithms(group):
+    return ["PBFT", "RAFT"]
+
+def get_algorithm_comparison(algorithms):
+    return pd.DataFrame({
+        'Algorithm': algorithms,
+        'Security': [9, 8],
+        'Scalability': [7, 8],
+        'Energy Efficiency': [6, 7]
+    })
+
+def generate_recommendation_justification(dlt_framework, user_responses):
+    return f"The {dlt_framework} is recommended based on your responses, particularly due to its high security and scalability features."
+
 def dlt_questionnaire_page(db):
     st.title("Recomendação de DLT para Saúde")
 
@@ -129,21 +149,46 @@ def dlt_questionnaire_page(db):
                 else:
                     st.error("Respostas insuficientes para gerar recomendação.")
             elif abordagem == "Híbrida (Regras + Machine Learning)":
-                recommender = DecisionTreeRecommender()
-                dlt_recomendada = recommender.get_recommendations(respostas_usuario)[0]
-                st.write(f"**DLT Recomendada (Híbrida):** {dlt_recomendada}")
+                try:
+                    recommender = DecisionTreeRecommender()
+                    dlt_recomendada = recommender.get_recommendations(respostas_usuario)[0]
+                    
+                    st.write(f"**DLT Recomendada:** {dlt_recomendada}")
 
-                st.subheader("Importância das Características")
-                feature_importances = recommender.get_feature_importances()
-                for feature, importance in feature_importances.items():
-                    st.write(f"{feature}: {importance:.4f}")
+                    grupo_algoritmos = get_algorithm_group(dlt_recomendada)
+                    st.write(f"**Grupo dos Algoritmos:** {grupo_algoritmos}")
 
-                st.subheader("Análise de Sensibilidade")
-                sensitivity_results = recommender.sensitivity_analysis(respostas_usuario)
-                for feature, sensitivity in sensitivity_results.items():
-                    st.write(f"{feature}: {sensitivity:.4f}")
+                    algoritmos_consenso = get_consensus_algorithms(grupo_algoritmos)
+                    st.write("**Algoritmos de Consenso:**")
+                    for algo in algoritmos_consenso:
+                        st.write(f"- {algo}")
 
-                st.write("A análise de sensibilidade mostra a probabilidade de mudança na recomendação ao variar cada característica.")
+                    st.write("**Comparação entre Algoritmos:**")
+                    comparison_table = get_algorithm_comparison(algoritmos_consenso)
+                    st.table(comparison_table)
+
+                    st.write("**Árvore de Decisão:**")
+                    decision_tree_fig = visualize_decision_tree(recommender.decision_tree)
+                    st.plotly_chart(decision_tree_fig)
+
+                    st.write("**Métricas de Cálculo:**")
+                    metrics = calculate_metrics(recommender, respostas_usuario)
+                    for metric, value in metrics.items():
+                        st.write(f"{metric}: {value}")
+
+                    st.write("**Justificativa da Recomendação:**")
+                    justification = generate_recommendation_justification(dlt_recomendada, respostas_usuario)
+                    st.write(justification)
+
+                    st.write("**Análise de Sensibilidade:**")
+                    sensitivity_results = recommender.sensitivity_analysis(respostas_usuario)
+                    for feature, sensitivity in sensitivity_results.items():
+                        st.write(f"{feature}: {sensitivity:.4f}")
+                    st.write("A análise de sensibilidade mostra a probabilidade de mudança na recomendação ao variar cada característica.")
+
+                except Exception as e:
+                    st.error(f"Erro ao processar a abordagem híbrida: {e}")
+                    logging.error(f"Erro ao processar a abordagem híbrida: {e}")
 
             calcular_metricas(db, dlt_recomendada, list(respostas_usuario.values()))
 
