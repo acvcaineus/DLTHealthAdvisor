@@ -29,6 +29,10 @@ def dlt_questionnaire_page(db, recommender):
         st.error("No training data available. Please contact the administrator.")
         return
 
+    # Debug: Print training data
+    st.write("Debug: Training Data")
+    st.write(training_data)
+
     # Obter respostas do usuário
     user_responses = get_user_responses()
 

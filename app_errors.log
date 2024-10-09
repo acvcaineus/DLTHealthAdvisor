@@ -504,3 +504,161 @@ LINE 2: ...                SELECT "Security", "Scalability", "Energy Ef...
 HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
 
 2024-10-09 04:05:48,118 - INFO - Database connection closed.
+2024-10-09 04:06:07,817 - INFO - Successfully connected to the database.
+2024-10-09 04:06:07,938 - ERROR - Error retrieving training data: column "Energy Efficiency" does not exist
+LINE 2: ...                SELECT "Security", "Scalability", "Energy Ef...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-09 04:06:08,021 - INFO - Database connection closed.
+2024-10-09 09:38:28,104 - INFO - Successfully connected to the database.
+2024-10-09 09:38:28,108 - INFO - Successfully connected to the database.
+2024-10-09 09:38:28,361 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:38:28,440 - INFO - Database connection closed.
+2024-10-09 09:38:28,534 - INFO - Database connection closed.
+2024-10-09 09:38:30,368 - INFO - Successfully connected to the database.
+2024-10-09 09:38:30,486 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:38:39,844 - INFO - Successfully connected to the database.
+2024-10-09 09:38:39,963 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:38:40,052 - INFO - Database connection closed.
+2024-10-09 09:38:45,437 - INFO - Successfully connected to the database.
+2024-10-09 09:38:45,557 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:38:45,665 - INFO - Database connection closed.
+2024-10-09 09:39:18,524 - INFO - Successfully connected to the database.
+2024-10-09 09:39:18,811 - ERROR - Error retrieving training data: column "Energy Efficiency" does not exist
+LINE 2: ...                SELECT "Security", "Scalability", "Energy Ef...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-09 09:39:18,925 - INFO - Database connection closed.
+2024-10-09 09:39:21,145 - INFO - Successfully connected to the database.
+2024-10-09 09:39:21,489 - INFO - Database connection closed.
+2024-10-09 09:39:26,661 - INFO - Successfully connected to the database.
+2024-10-09 09:39:26,786 - ERROR - Error retrieving training data: column "Energy Efficiency" does not exist
+LINE 2: ...                SELECT "Security", "Scalability", "Energy Ef...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-09 09:39:33,290 - INFO - Successfully connected to the database.
+2024-10-09 09:39:33,426 - ERROR - Error retrieving training data: column "Energy Efficiency" does not exist
+LINE 2: ...                SELECT "Security", "Scalability", "Energy Ef...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-09 09:39:33,554 - INFO - Database connection closed.
+2024-10-09 09:39:37,555 - INFO - Successfully connected to the database.
+2024-10-09 09:39:37,674 - ERROR - Error retrieving training data: column "Energy Efficiency" does not exist
+LINE 2: ...                SELECT "Security", "Scalability", "Energy Ef...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.energy_efficiency".
+
+2024-10-09 09:39:37,765 - INFO - Database connection closed.
+2024-10-09 09:40:11,196 - INFO - Successfully connected to the database.
+2024-10-09 09:40:11,417 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:40:11,472 - INFO - Database connection closed.
+2024-10-09 09:40:18,909 - INFO - Successfully connected to the database.
+2024-10-09 09:40:19,296 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:40:20,070 - INFO - Successfully connected to the database.
+2024-10-09 09:40:20,189 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:40:20,290 - INFO - Database connection closed.
+2024-10-09 09:40:34,887 - INFO - Successfully connected to the database.
+2024-10-09 09:40:35,009 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:40:35,114 - INFO - Database connection closed.
+2024-10-09 09:40:39,539 - INFO - Successfully connected to the database.
+2024-10-09 09:40:39,666 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:40:39,750 - INFO - Database connection closed.
+2024-10-09 09:42:01,366 - INFO - Successfully connected to the database.
+2024-10-09 09:42:01,632 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:42:01,696 - INFO - Database connection closed.
+2024-10-09 09:42:03,511 - INFO - Successfully connected to the database.
+2024-10-09 09:42:03,892 - INFO - Database connection closed.
+2024-10-09 09:42:07,263 - INFO - Successfully connected to the database.
+2024-10-09 09:42:07,388 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:42:16,490 - INFO - Successfully connected to the database.
+2024-10-09 09:42:16,608 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:42:16,715 - INFO - Database connection closed.
+2024-10-09 09:42:21,188 - INFO - Successfully connected to the database.
+2024-10-09 09:42:21,308 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:42:21,429 - INFO - Database connection closed.
+2024-10-09 09:42:28,766 - INFO - Successfully connected to the database.
+2024-10-09 09:42:28,767 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 09:42:29,006 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:42:29,067 - INFO - Database connection closed.
+2024-10-09 09:42:31,629 - INFO - Successfully connected to the database.
+2024-10-09 09:42:31,630 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 09:42:31,994 - INFO - Database connection closed.
+2024-10-09 09:42:33,094 - INFO - Successfully connected to the database.
+2024-10-09 09:42:33,095 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 09:42:33,215 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+

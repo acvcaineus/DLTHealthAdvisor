@@ -28,13 +28,16 @@ class Database:
         """Retrieves training data from the database."""
         try:
             with self.conn.cursor() as cur:
-                cur.execute('''
-                    SELECT "Security", "Scalability", "Energy Efficiency", "Governance", "Interoperability", 
-                           "Operational Complexity", "Implementation Cost", "Latency", name as framework 
+                query = '''
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
                     FROM dlt_training_data
-                ''')
+                '''
+                logging.info(f"Executing SQL query: {query}")
+                cur.execute(query)
                 data = cur.fetchall()
-                columns = [desc[0] for desc in cur.description]
+                columns = ['Security', 'Scalability', 'Energy Efficiency', 'Governance', 'Interoperability', 
+                           'Operational Complexity', 'Implementation Cost', 'Latency', 'framework']
                 df = pd.DataFrame(data, columns=columns)
                 if df.empty:
                     st.error("No training data found in the database.")
@@ -42,6 +45,7 @@ class Database:
                 else:
                     st.success("Training data successfully loaded.")
                     logging.info(f"Training data loaded. Columns: {df.columns.tolist()}")
+                    logging.info(f"First few rows of data: {df.head().to_dict()}")
                     st.write("Available columns in training data:", df.columns.tolist())
                 return df
         except psycopg2.Error as e:
