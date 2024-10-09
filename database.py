@@ -190,49 +190,18 @@ class Database:
             logging.error(f"Erro ao inserir perguntas no banco de dados: {e}")
             self.conn.rollback()
 
-    def create_user(self, username, password_hash):
-        """Insere um novo usuário no banco de dados."""
+    def get_user_by_username(self, username):
         try:
             with self.conn.cursor() as cur:
-                # Verifica se o usuário já existe
-                cur.execute("SELECT id FROM users WHERE username = %s", (username,))
-                if cur.fetchone():
-                    st.warning(f"O usuário {username} já existe.")
-                    return None
-
-                # Insere o novo usuário
-                cur.execute(
-                    "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id",
-                    (username, password_hash)
-                )
-                user_id = cur.fetchone()[0]
-                self.conn.commit()
-                logging.info(f"Usuário criado com sucesso: {username}")
-                return user_id
+                cur.execute("SELECT id, username, password_hash FROM users WHERE username = %s", (username,))
+                user = cur.fetchone()
+                if user:
+                    return {'id': user[0], 'username': user[1], 'password_hash': user[2]}
+                return None
         except psycopg2.Error as e:
-            st.error(f"Erro ao criar usuário no banco de dados: {e}")
-            logging.error(f"Erro ao criar usuário {username}: {e}")
-            self.conn.rollback()
+            st.error(f"Error retrieving user: {e}")
+            logging.error(f"Error retrieving user {username}: {e}")
             return None
-
-    def get_training_data(self):
-        """Recupera os dados de treinamento do banco de dados."""
-        try:
-            with self.conn.cursor() as cur:
-                cur.execute("""
-                    SELECT framework, Security, Scalability, Energy_efficiency, Governance,
-                           Interoperability, Operational_Complexity, Implementation_Cost, Latency
-                    FROM dlt_training_data
-                """)
-                data = cur.fetchall()
-                columns = ['framework', 'security', 'scalability', 'energy_efficiency', 'governance',
-                           'interoperability', 'operational_complexity', 'implementation_cost', 'latency']
-                df = pd.DataFrame(data, columns=columns)
-                return df
-        except psycopg2.Error as e:
-            st.error(f"Error retrieving training data: {e}")
-            logging.error(f"Error retrieving training data: {e}")
-            return pd.DataFrame()
 
     def __del__(self):
         """Fecha a conexão com o banco de dados quando o objeto Database for destruído."""
