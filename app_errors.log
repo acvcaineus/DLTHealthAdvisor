@@ -662,3 +662,100 @@ LINE 2:                     SELECT security, scalability, energy_eff...
                                    ^
 HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
 
+2024-10-09 09:42:48,039 - INFO - Successfully connected to the database.
+2024-10-09 09:42:48,039 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 09:42:48,161 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 09:42:48,234 - INFO - Database connection closed.
+2024-10-09 11:09:53,470 - INFO - Successfully connected to the database.
+2024-10-09 11:09:53,856 - INFO - Successfully connected to the database.
+2024-10-09 11:09:53,857 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 11:09:53,983 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 11:09:53,985 - INFO - Database connection closed.
+2024-10-09 11:09:54,085 - INFO - Database connection closed.
+2024-10-09 11:10:59,258 - INFO - Successfully connected to the database.
+2024-10-09 11:10:59,627 - INFO - Successfully connected to the database.
+2024-10-09 11:10:59,627 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 11:10:59,745 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 11:10:59,764 - INFO - Database connection closed.
+2024-10-09 11:10:59,848 - INFO - Database connection closed.
+2024-10-09 11:11:16,490 - INFO - Successfully connected to the database.
+2024-10-09 11:11:16,841 - INFO - Successfully connected to the database.
+2024-10-09 11:11:16,843 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 11:11:16,960 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 11:11:16,970 - INFO - Database connection closed.
+2024-10-09 11:11:17,082 - INFO - Database connection closed.
+2024-10-09 11:11:35,078 - INFO - Successfully connected to the database.
+2024-10-09 11:11:35,087 - INFO - Successfully connected to the database.
+2024-10-09 11:11:35,432 - INFO - Successfully connected to the database.
+2024-10-09 11:11:35,433 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 11:11:35,459 - INFO - Successfully connected to the database.
+2024-10-09 11:11:35,460 - INFO - Executing SQL query: 
+                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
+                           operational_complexity, implementation_cost, latency, name as framework 
+                    FROM dlt_training_data
+                
+2024-10-09 11:11:35,548 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 11:11:35,549 - INFO - Database connection closed.
+2024-10-09 11:11:35,611 - ERROR - Error retrieving training data: column "security" does not exist
+LINE 2:                     SELECT security, scalability, energy_eff...
+                                   ^
+HINT:  Perhaps you meant to reference the column "dlt_training_data.Security".
+
+2024-10-09 11:11:35,613 - INFO - Database connection closed.
+2024-10-09 11:11:35,613 - INFO - Database connection closed.
+2024-10-09 11:11:35,969 - INFO - Successfully connected to the database.
+2024-10-09 11:11:36,122 - INFO - Database connection closed.
+2024-10-09 11:18:25,255 - INFO - Database connection closed.
+2024-10-09 11:18:25,258 - INFO - Database connection closed.
+2024-10-09 11:21:10,074 - INFO - Successfully connected to the database.
+2024-10-09 11:21:10,315 - ERROR - Error creating user paula: duplicate key value violates unique constraint "users_pkey"
+DETAIL:  Key (id)=(2) already exists.
+
+2024-10-09 11:21:10,315 - INFO - Database connection closed.
+2024-10-09 11:21:42,865 - INFO - Successfully connected to the database.
+2024-10-09 11:21:43,120 - INFO - User paula created with ID 3.
+2024-10-09 11:21:43,122 - INFO - Database connection closed.
+2024-10-09 11:21:55,559 - INFO - Successfully connected to the database.
+2024-10-09 11:23:17,575 - INFO - Successfully connected to the database.
+2024-10-09 11:23:17,696 - INFO - User paula found in the database.
+2024-10-09 11:23:17,703 - INFO - Database connection closed.

@@ -1,7 +1,6 @@
 import psycopg2
 import os
 import logging
-import streamlit as st
 import pandas as pd
 
 # Configuração de logging
@@ -20,62 +19,55 @@ class Database:
             )
             logging.info("Successfully connected to the database.")
         except psycopg2.DatabaseError as e:
-            st.error(f"Error connecting to the database: {e}")
             logging.error(f"Error connecting to the database: {e}")
             raise
 
-    def get_training_data(self):
-        """Retrieves training data from the database."""
+    def create_user(self, username, password_hash):
+        """Creates a new user in the database."""
         try:
             with self.conn.cursor() as cur:
-                query = '''
-                    SELECT security, scalability, energy_efficiency, governance, interoperability, 
-                           operational_complexity, implementation_cost, latency, name as framework 
-                    FROM dlt_training_data
-                '''
-                logging.info(f"Executing SQL query: {query}")
-                cur.execute(query)
-                data = cur.fetchall()
-                columns = ['Security', 'Scalability', 'Energy Efficiency', 'Governance', 'Interoperability', 
-                           'Operational Complexity', 'Implementation Cost', 'Latency', 'framework']
-                df = pd.DataFrame(data, columns=columns)
-                if df.empty:
-                    st.error("No training data found in the database.")
-                    logging.error("No training data found in the database.")
-                else:
-                    st.success("Training data successfully loaded.")
-                    logging.info(f"Training data loaded. Columns: {df.columns.tolist()}")
-                    logging.info(f"First few rows of data: {df.head().to_dict()}")
-                    st.write("Available columns in training data:", df.columns.tolist())
-                return df
+                cur.execute(
+                    "INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id",
+                    (username, password_hash)
+                )
+                self.conn.commit()
+                user_id = cur.fetchone()[0]
+                logging.info(f"User {username} created with ID {user_id}.")
+                return user_id
         except psycopg2.Error as e:
-            st.error(f"Error retrieving training data: {e}")
-            logging.error(f"Error retrieving training data: {e}")
-            return pd.DataFrame()
+            logging.error(f"Error creating user {username}: {e}")
+            return None
 
     def get_user_by_username(self, username):
+        """Fetches user details by username."""
         try:
             with self.conn.cursor() as cur:
                 cur.execute("SELECT id, username, password_hash FROM users WHERE username = %s", (username,))
                 user = cur.fetchone()
                 if user:
+                    logging.info(f"User {username} found in the database.")
                     return {'id': user[0], 'username': user[1], 'password_hash': user[2]}
-                return None
+                else:
+                    logging.info(f"User {username} not found.")
+                    return None
         except psycopg2.Error as e:
-            st.error(f"Error retrieving user: {e}")
             logging.error(f"Error retrieving user {username}: {e}")
             return None
 
-    def create_user(self, username, password_hash):
+    def get_user_by_id(self, user_id):
+        """Fetches user details by user ID."""
         try:
             with self.conn.cursor() as cur:
-                cur.execute("INSERT INTO users (username, password_hash) VALUES (%s, %s) RETURNING id", (username, password_hash))
-                user_id = cur.fetchone()[0]
-                self.conn.commit()
-                return user_id
+                cur.execute("SELECT id, username, password_hash FROM users WHERE id = %s", (user_id,))
+                user = cur.fetchone()
+                if user:
+                    logging.info(f"User with ID {user_id} found in the database.")
+                    return {'id': user[0], 'username': user[1], 'password_hash': user[2]}
+                else:
+                    logging.info(f"User with ID {user_id} not found.")
+                    return None
         except psycopg2.Error as e:
-            st.error(f"Error creating user: {e}")
-            logging.error(f"Error creating user {username}: {e}")
+            logging.error(f"Error retrieving user by ID {user_id}: {e}")
             return None
 
     def __del__(self):
