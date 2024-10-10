@@ -2,7 +2,7 @@
 
 ![DLT Health Advisor](https://img.shields.io/badge/DLT_Health_Advisor-v1.0-blue.svg)
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-brightgreen.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 
 O **DLT Health Advisor** é uma aplicação desenvolvida para auxiliar pesquisadores e desenvolvedores a escolherem as melhores soluções de tecnologia de registro distribuído (DLT - Distributed Ledger Technology) para sistemas de saúde. O projeto inclui funcionalidades de recomendação baseadas em modelos de aprendizado de máquina, análises sensíveis e comparações detalhadas de diferentes frameworks DLT, com foco em critérios como segurança, escalabilidade, governança e eficiência energética.
@@ -196,9 +196,11 @@ my_dlt_project/
 
 ## 📖 Licença
 
-Este projeto está licenciado sob a MIT License. Sinta-se à vontade para usar e modificar o código conforme necessário.
+Este projeto está licenciado sob a Apache 2.0 License. Sinta-se à vontade para usar e modificar o código conforme necessário.
 
 Se você deseja discutir melhorias, reportar problemas ou compartilhar resultados acadêmicos baseados neste projeto, sinta-se à vontade para abrir uma issue ou fazer um pull request.
+
+DLT Health Advisor - Desenvolvido para um futuro mais seguro e interoperável nos sistemas de saúde 🌐🚀.
 
 
 
